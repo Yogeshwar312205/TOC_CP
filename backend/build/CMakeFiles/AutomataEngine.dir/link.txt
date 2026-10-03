@@ -1,0 +1,2 @@
+C:\MinGW\bin\ar.exe qc libAutomataEngine.a CMakeFiles/AutomataEngine.dir/src/Conversion.cpp.obj CMakeFiles/AutomataEngine.dir/src/Minimization.cpp.obj CMakeFiles/AutomataEngine.dir/src/Simulator.cpp.obj CMakeFiles/AutomataEngine.dir/src/Validation.cpp.obj
+C:\MinGW\bin\ranlib.exe libAutomataEngine.a

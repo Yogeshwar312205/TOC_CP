@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/TOC_CP/backend/build/cmake_install.cmake",
+		"D:/TOC_CP/backend/build/_deps/crow-build/cmake_install.cmake",
+		"D:/TOC_CP/backend/build/_deps/json-build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
