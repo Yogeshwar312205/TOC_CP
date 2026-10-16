@@ -10,6 +10,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "D:/TOC_CP/backend/src/Conversion.cpp" "CMakeFiles/AutomataEngine.dir/src/Conversion.cpp.obj" "gcc" "CMakeFiles/AutomataEngine.dir/src/Conversion.cpp.obj.d"
   "D:/TOC_CP/backend/src/Minimization.cpp" "CMakeFiles/AutomataEngine.dir/src/Minimization.cpp.obj" "gcc" "CMakeFiles/AutomataEngine.dir/src/Minimization.cpp.obj.d"
+  "D:/TOC_CP/backend/src/RegexParser.cpp" "CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj" "gcc" "CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj.d"
+  "D:/TOC_CP/backend/src/RegexToNFA.cpp" "CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj" "gcc" "CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj.d"
   "D:/TOC_CP/backend/src/Simulator.cpp" "CMakeFiles/AutomataEngine.dir/src/Simulator.cpp.obj" "gcc" "CMakeFiles/AutomataEngine.dir/src/Simulator.cpp.obj.d"
   "D:/TOC_CP/backend/src/Validation.cpp" "CMakeFiles/AutomataEngine.dir/src/Validation.cpp.obj" "gcc" "CMakeFiles/AutomataEngine.dir/src/Validation.cpp.obj.d"
   )

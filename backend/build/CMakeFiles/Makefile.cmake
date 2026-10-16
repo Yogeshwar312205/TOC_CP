@@ -97,5 +97,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/AutomataEngine.dir/DependInfo.cmake"
   "CMakeFiles/automatalab_server.dir/DependInfo.cmake"
   "CMakeFiles/automatalab_tests.dir/DependInfo.cmake"
+  "CMakeFiles/automatalab_cli.dir/DependInfo.cmake"
   "_deps/crow-build/CMakeFiles/uninstall.dir/DependInfo.cmake"
   )

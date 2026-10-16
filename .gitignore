@@ -1,0 +1,38 @@
+# Compiled executables
+*.exe
+*.out
+*.o
+*.obj
+
+# Build folders
+build/
+bin/
+dist/
+
+# IDE and editor files
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Python files (if applicable)
+__pycache__/
+*.pyc
+venv/
+.venv/

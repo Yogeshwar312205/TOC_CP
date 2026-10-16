@@ -131,12 +131,44 @@ CMakeFiles/AutomataEngine.dir/src/Validation.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/AutomataEngine.dir/src/Validation.cpp.s"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\TOC_CP\backend\src\Validation.cpp -o CMakeFiles\AutomataEngine.dir\src\Validation.cpp.s
 
+CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj: CMakeFiles/AutomataEngine.dir/flags.make
+CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj: CMakeFiles/AutomataEngine.dir/includes_CXX.rsp
+CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj: D:/TOC_CP/backend/src/RegexParser.cpp
+CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj: CMakeFiles/AutomataEngine.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj -MF CMakeFiles\AutomataEngine.dir\src\RegexParser.cpp.obj.d -o CMakeFiles\AutomataEngine.dir\src\RegexParser.cpp.obj -c D:\TOC_CP\backend\src\RegexParser.cpp
+
+CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\TOC_CP\backend\src\RegexParser.cpp > CMakeFiles\AutomataEngine.dir\src\RegexParser.cpp.i
+
+CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\TOC_CP\backend\src\RegexParser.cpp -o CMakeFiles\AutomataEngine.dir\src\RegexParser.cpp.s
+
+CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj: CMakeFiles/AutomataEngine.dir/flags.make
+CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj: CMakeFiles/AutomataEngine.dir/includes_CXX.rsp
+CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj: D:/TOC_CP/backend/src/RegexToNFA.cpp
+CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj: CMakeFiles/AutomataEngine.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj -MF CMakeFiles\AutomataEngine.dir\src\RegexToNFA.cpp.obj.d -o CMakeFiles\AutomataEngine.dir\src\RegexToNFA.cpp.obj -c D:\TOC_CP\backend\src\RegexToNFA.cpp
+
+CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\TOC_CP\backend\src\RegexToNFA.cpp > CMakeFiles\AutomataEngine.dir\src\RegexToNFA.cpp.i
+
+CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\TOC_CP\backend\src\RegexToNFA.cpp -o CMakeFiles\AutomataEngine.dir\src\RegexToNFA.cpp.s
+
 # Object files for target AutomataEngine
 AutomataEngine_OBJECTS = \
 "CMakeFiles/AutomataEngine.dir/src/Conversion.cpp.obj" \
 "CMakeFiles/AutomataEngine.dir/src/Minimization.cpp.obj" \
 "CMakeFiles/AutomataEngine.dir/src/Simulator.cpp.obj" \
-"CMakeFiles/AutomataEngine.dir/src/Validation.cpp.obj"
+"CMakeFiles/AutomataEngine.dir/src/Validation.cpp.obj" \
+"CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj" \
+"CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj"
 
 # External object files for target AutomataEngine
 AutomataEngine_EXTERNAL_OBJECTS =
@@ -145,9 +177,11 @@ libAutomataEngine.a: CMakeFiles/AutomataEngine.dir/src/Conversion.cpp.obj
 libAutomataEngine.a: CMakeFiles/AutomataEngine.dir/src/Minimization.cpp.obj
 libAutomataEngine.a: CMakeFiles/AutomataEngine.dir/src/Simulator.cpp.obj
 libAutomataEngine.a: CMakeFiles/AutomataEngine.dir/src/Validation.cpp.obj
+libAutomataEngine.a: CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj
+libAutomataEngine.a: CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj
 libAutomataEngine.a: CMakeFiles/AutomataEngine.dir/build.make
 libAutomataEngine.a: CMakeFiles/AutomataEngine.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library libAutomataEngine.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX static library libAutomataEngine.a"
 	$(CMAKE_COMMAND) -P CMakeFiles\AutomataEngine.dir\cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\AutomataEngine.dir\link.txt --verbose=$(VERBOSE)
 

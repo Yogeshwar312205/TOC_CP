@@ -54,31 +54,32 @@ export const StateNode = memo(({ data }: NodeProps) => {
 
       {/* Main Node Circle */}
       <div
-        className={`w-14 h-14 rounded-full border-2 ${borderColor} ${bgColor} ${textColor} ${glow} backdrop-blur-md flex flex-col items-center justify-center font-mono font-bold text-sm transition-all duration-300 relative`}
+        className={`w-14 h-14 rounded-full border-2 ${borderColor} ${bgColor} ${textColor} ${glow} backdrop-blur-md flex flex-col items-center justify-center font-mono font-bold text-sm transition-all duration-300 relative cursor-pointer hover:scale-105`}
+        title={`State: ${label}${isStart ? ' (Start State)' : ''}${isAccept ? ' (Accept State)' : ''}${isUnreachable ? ' (Unreachable)' : ''}`}
       >
         {/* Inner Circle for Accept States */}
         {isAccept && (
-          <div className="absolute inset-1 rounded-full border border-emerald-500/70 pointer-events-none" />
+          <div className={`absolute inset-1 rounded-full border-2 ${isActive ? 'border-amber-400' : 'border-emerald-500/80'} pointer-events-none`} />
         )}
 
-        <span>{label}</span>
+        <span className="z-10">{label}</span>
 
         {nodeData.substates && nodeData.substates.length > 0 && (
-          <span className="text-[9px] text-slate-400 font-normal truncate max-w-[44px]">
+          <span className="text-[8px] text-slate-400 font-normal truncate max-w-[46px] z-10 px-1 rounded bg-slate-950/60">
             {`{${nodeData.substates.join(',')}}`}
           </span>
         )}
       </div>
 
-      {/* Handles for React Flow connections (dual source & target on all 4 sides) */}
-      <Handle type="target" position={Position.Top} id="target-top" className="opacity-0" />
-      <Handle type="source" position={Position.Top} id="source-top" className="opacity-0" />
-      <Handle type="target" position={Position.Bottom} id="target-bottom" className="opacity-0" />
-      <Handle type="source" position={Position.Bottom} id="source-bottom" className="opacity-0" />
-      <Handle type="target" position={Position.Left} id="target-left" className="opacity-0" />
-      <Handle type="source" position={Position.Left} id="source-left" className="opacity-0" />
-      <Handle type="target" position={Position.Right} id="target-right" className="opacity-0" />
-      <Handle type="source" position={Position.Right} id="source-right" className="opacity-0" />
+      {/* Handles for React Flow connections (source & target on all 4 sides) */}
+      <Handle type="target" position={Position.Top} id="top" className="w-1.5 h-1.5 opacity-0" />
+      <Handle type="source" position={Position.Top} id="source-top" className="w-1.5 h-1.5 opacity-0" />
+      <Handle type="target" position={Position.Bottom} id="bottom" className="w-1.5 h-1.5 opacity-0" />
+      <Handle type="source" position={Position.Bottom} id="source-bottom" className="w-1.5 h-1.5 opacity-0" />
+      <Handle type="target" position={Position.Left} id="left" className="w-1.5 h-1.5 opacity-0" />
+      <Handle type="source" position={Position.Left} id="source-left" className="w-1.5 h-1.5 opacity-0" />
+      <Handle type="target" position={Position.Right} id="right" className="w-1.5 h-1.5 opacity-0" />
+      <Handle type="source" position={Position.Right} id="source-right" className="w-1.5 h-1.5 opacity-0" />
     </div>
   );
 });

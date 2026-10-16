@@ -12,11 +12,12 @@ import type {
   DFASimulationStep,
   TableEntry,
   EquivalenceClass,
+  LanguageToAutomataResponse,
 } from '../types/automaton';
 import type { ApiResponse } from '../types/api';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -255,4 +256,18 @@ export const apiService = {
     const res = await api.get('/examples');
     return res.data;
   },
+
+  convertLanguageToAutomata: async (
+    alphabet: string[],
+    description: string,
+    regexOverride?: string
+  ): Promise<LanguageToAutomataResponse> => {
+    const res = await api.post('/language-to-automata', {
+      alphabet,
+      description,
+      regexOverride,
+    });
+    return res.data;
+  },
 };
+

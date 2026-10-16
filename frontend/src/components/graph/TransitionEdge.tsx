@@ -27,18 +27,22 @@ export const TransitionEdge = memo(({
   const isSelfLoop = source === target || (sourceX === targetX && sourceY === targetY);
 
   if (isSelfLoop) {
-    // Smooth cubic loop above the node circle
-    const path = `M ${sourceX - 12} ${sourceY - 24} C ${sourceX - 36} ${sourceY - 62}, ${sourceX + 36} ${sourceY - 62}, ${sourceX + 12} ${sourceY - 24}`;
+    // Smooth cubic loop above the node circle (starts and returns cleanly to top of node)
+    const loopRadius = 24;
+    const path = `M ${sourceX - 8} ${sourceY} C ${sourceX - 28} ${sourceY - 48}, ${sourceX + 28} ${sourceY - 48}, ${sourceX + 8} ${sourceY}`;
     const labelX = sourceX;
-    const labelY = sourceY - 64;
+    const labelY = sourceY - 48;
 
     return (
       <>
         <path
           id={id}
           className={`react-flow__edge-path ${
-            isActive ? 'stroke-amber-400 stroke-[2.5px] animate-pulse' : 'stroke-cyan-500/80 stroke-[1.5px]'
+            isActive ? 'stroke-amber-400 stroke-[3px] animate-pulse' : 'stroke-cyan-500/80 stroke-[1.8px]'
           }`}
+          style={{
+            filter: isActive ? 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.8))' : 'none',
+          }}
           d={path}
           markerEnd={markerEnd}
           fill="none"
@@ -50,9 +54,9 @@ export const TransitionEdge = memo(({
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: 'all',
             }}
-            className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold border backdrop-blur-md shadow-md ${
+            className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold border backdrop-blur-md shadow-md ${
               isActive
-                ? 'bg-amber-950/90 text-amber-300 border-amber-500 shadow-amber-500/50'
+                ? 'bg-amber-950/95 text-amber-300 border-amber-400 shadow-amber-500/50 ring-2 ring-amber-400/30'
                 : 'bg-slate-900/90 text-cyan-300 border-cyan-500/40'
             }`}
           >
@@ -73,7 +77,7 @@ export const TransitionEdge = memo(({
 
     const mx = (sourceX + targetX) / 2;
     const my = (sourceY + targetY) / 2;
-    const offset = 38;
+    const offset = 36;
 
     const cx = mx + nx * offset;
     const cy = my + ny * offset;
@@ -87,8 +91,11 @@ export const TransitionEdge = memo(({
         <path
           id={id}
           className={`react-flow__edge-path ${
-            isActive ? 'stroke-amber-400 stroke-[2.5px] animate-pulse' : 'stroke-cyan-500/80 stroke-[1.5px]'
+            isActive ? 'stroke-amber-400 stroke-[3px] animate-pulse' : 'stroke-cyan-500/80 stroke-[1.8px]'
           }`}
+          style={{
+            filter: isActive ? 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.8))' : 'none',
+          }}
           d={edgePath}
           markerEnd={markerEnd}
           fill="none"
@@ -100,9 +107,9 @@ export const TransitionEdge = memo(({
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: 'all',
             }}
-            className={`px-2 py-0.5 rounded-md text-xs font-mono font-semibold border backdrop-blur-md shadow-md ${
+            className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-bold border backdrop-blur-md shadow-md ${
               isActive
-                ? 'bg-amber-950/90 text-amber-300 border-amber-500'
+                ? 'bg-amber-950/95 text-amber-300 border-amber-400 shadow-amber-500/50 ring-2 ring-amber-400/30'
                 : 'bg-slate-900/90 text-cyan-300 border-cyan-500/40'
             }`}
           >
@@ -130,8 +137,9 @@ export const TransitionEdge = memo(({
         path={edgePath}
         markerEnd={markerEnd}
         style={{
-          stroke: isActive ? '#f59e0b' : 'rgba(6, 182, 212, 0.6)',
-          strokeWidth: isActive ? 2.5 : 1.5,
+          stroke: isActive ? '#f59e0b' : 'rgba(6, 182, 212, 0.75)',
+          strokeWidth: isActive ? 3 : 1.8,
+          filter: isActive ? 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.8))' : 'none',
         }}
       />
       <EdgeLabelRenderer>
@@ -141,9 +149,9 @@ export const TransitionEdge = memo(({
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             pointerEvents: 'all',
           }}
-          className={`px-2 py-0.5 rounded-md text-xs font-mono font-semibold border backdrop-blur-md shadow-md ${
+          className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-bold border backdrop-blur-md shadow-md ${
             isActive
-              ? 'bg-amber-950/90 text-amber-300 border-amber-500'
+              ? 'bg-amber-950/95 text-amber-300 border-amber-400 shadow-amber-500/50 ring-2 ring-amber-400/30'
               : 'bg-slate-900/90 text-cyan-300 border-cyan-500/40'
           }`}
         >

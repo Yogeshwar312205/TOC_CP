@@ -52,6 +52,7 @@ interface AutomataState {
   // Helper actions
   resetStore: () => void;
   loadExample: (example: AutomataExample) => void;
+  loadGeneratedAutomata: (nfa: NFA, dfa: DFA, minDfa: DFA, steps?: ConversionStep[]) => void;
 }
 
 const DEFAULT_NFA: NFA = {
@@ -146,4 +147,34 @@ export const useAutomataStore = create<AutomataState>((set) => ({
       minDfaSimResult: null,
       error: null,
     }),
+
+  loadGeneratedAutomata: (nfa, dfa, minDfa, steps = []) =>
+    set({
+      nfa,
+      dfa,
+      conversionResult: dfa,
+      conversionSteps: steps,
+      currentStepIndex: steps.length > 0 ? steps.length - 1 : 0,
+      minimizationResult: {
+        originalStates: dfa.states,
+        unreachableStates: [],
+        table: [],
+        equivalenceClasses: [],
+        stateMapping: {},
+        minimizedDfa: minDfa,
+        stats: {
+          originalStateCount: dfa.states.length,
+          minimizedStateCount: minDfa.states.length,
+          reductionPercentage:
+            dfa.states.length > 0
+              ? Math.max(0, ((dfa.states.length - minDfa.states.length) / dfa.states.length) * 100)
+              : 0,
+        },
+      },
+      nfaSimResult: null,
+      dfaSimResult: null,
+      minDfaSimResult: null,
+      error: null,
+    }),
 }));
+

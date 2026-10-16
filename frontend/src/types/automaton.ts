@@ -128,3 +128,47 @@ export interface AutomataExample {
   category: string;
   nfa: NFA;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Natural Language to Automata
+// ─────────────────────────────────────────────────────────────────────────────
+export interface LanguageInterpretation {
+  status?: 'success' | 'clarification_needed' | 'non_regular';
+  normalizedDescription?: string;
+  description?: string;
+  alphabet?: string[];
+  regularExpression?: string;
+  explanation?: string;
+  assumptions?: string[];
+  confidence?: number;
+}
+
+export interface LanguageToAutomataMetrics {
+  epsilonNFAStates: number;
+  dfaStates: number;
+  minimizedDFAStates: number;
+  epsilonNFATransitions?: number;
+  dfaTransitions?: number;
+  minimizedDFATransitions?: number;
+  stateReductionPercentage: number;
+}
+
+export interface LanguageToAutomataResponse {
+  success: boolean;
+  status?: string;
+  error?: string;
+  code?: string;
+  interpretation: LanguageInterpretation;
+  automata?: {
+    epsilonNFA: NFA;
+    dfa: DFA;
+    minimizedDFA: DFA;
+  };
+  metrics?: LanguageToAutomataMetrics;
+  traces?: {
+    conversion: ConversionStep[];
+    minimization: TableEntry[];
+  };
+  engine?: 'cpp' | 'node';
+}
+

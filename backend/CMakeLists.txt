@@ -59,6 +59,8 @@ add_library(AutomataEngine STATIC
     src/Minimization.cpp
     src/Simulator.cpp
     src/Validation.cpp
+    src/RegexParser.cpp
+    src/RegexToNFA.cpp
 )
 target_include_directories(AutomataEngine PUBLIC include)
 target_link_libraries(AutomataEngine PUBLIC nlohmann_json::nlohmann_json)
@@ -92,6 +94,7 @@ add_executable(automatalab_tests
     tests/test_conversion.cpp
     tests/test_minimization.cpp
     tests/test_simulator.cpp
+    tests/test_regex.cpp
 )
 target_link_libraries(automatalab_tests PRIVATE
     AutomataEngine
@@ -103,5 +106,18 @@ if(MSVC)
     target_compile_options(automatalab_tests PRIVATE /bigobj /EHsc /utf-8)
 endif()
 
+# ── 7. CLI executable for Node.js subprocess invocation ────────────────────────
+add_executable(automatalab_cli src/cli.cpp)
+target_link_libraries(automatalab_cli PRIVATE
+    AutomataEngine
+    nlohmann_json::nlohmann_json
+)
+target_compile_definitions(automatalab_cli PRIVATE ASIO_STANDALONE)
+
+if(MSVC)
+    target_compile_options(automatalab_cli PRIVATE /bigobj /EHsc /utf-8)
+endif()
+
 enable_testing()
 add_test(NAME AllTests COMMAND automatalab_tests)
+

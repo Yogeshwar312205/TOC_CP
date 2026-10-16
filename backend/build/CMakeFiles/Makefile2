@@ -65,6 +65,7 @@ CMAKE_BINARY_DIR = D:\TOC_CP\backend\build
 all: CMakeFiles/AutomataEngine.dir/all
 all: CMakeFiles/automatalab_server.dir/all
 all: CMakeFiles/automatalab_tests.dir/all
+all: CMakeFiles/automatalab_cli.dir/all
 all: _deps/crow-build/all
 all: _deps/json-build/all
 .PHONY : all
@@ -73,6 +74,7 @@ all: _deps/json-build/all
 codegen: CMakeFiles/AutomataEngine.dir/codegen
 codegen: CMakeFiles/automatalab_server.dir/codegen
 codegen: CMakeFiles/automatalab_tests.dir/codegen
+codegen: CMakeFiles/automatalab_cli.dir/codegen
 codegen: _deps/crow-build/codegen
 codegen: _deps/json-build/codegen
 .PHONY : codegen
@@ -86,6 +88,7 @@ preinstall: _deps/json-build/preinstall
 clean: CMakeFiles/AutomataEngine.dir/clean
 clean: CMakeFiles/automatalab_server.dir/clean
 clean: CMakeFiles/automatalab_tests.dir/clean
+clean: CMakeFiles/automatalab_cli.dir/clean
 clean: _deps/crow-build/clean
 clean: _deps/json-build/clean
 .PHONY : clean
@@ -135,12 +138,12 @@ _deps/json-build/clean:
 CMakeFiles/AutomataEngine.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=1,2,3,4,5 "Built target AutomataEngine"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target AutomataEngine"
 .PHONY : CMakeFiles/AutomataEngine.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/AutomataEngine.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/AutomataEngine.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 0
 .PHONY : CMakeFiles/AutomataEngine.dir/rule
@@ -152,7 +155,7 @@ AutomataEngine: CMakeFiles/AutomataEngine.dir/rule
 # codegen rule for target.
 CMakeFiles/AutomataEngine.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=1,2,3,4,5 "Finished codegen for target AutomataEngine"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=1,2,3,4,5,6,7 "Finished codegen for target AutomataEngine"
 .PHONY : CMakeFiles/AutomataEngine.dir/codegen
 
 # clean rule for target.
@@ -167,12 +170,12 @@ CMakeFiles/AutomataEngine.dir/clean:
 CMakeFiles/automatalab_server.dir/all: CMakeFiles/AutomataEngine.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_server.dir\build.make CMakeFiles/automatalab_server.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_server.dir\build.make CMakeFiles/automatalab_server.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=6,7 "Built target automatalab_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=10,11 "Built target automatalab_server"
 .PHONY : CMakeFiles/automatalab_server.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/automatalab_server.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 9
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/automatalab_server.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 0
 .PHONY : CMakeFiles/automatalab_server.dir/rule
@@ -184,7 +187,7 @@ automatalab_server: CMakeFiles/automatalab_server.dir/rule
 # codegen rule for target.
 CMakeFiles/automatalab_server.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_server.dir\build.make CMakeFiles/automatalab_server.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=6,7 "Finished codegen for target automatalab_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=10,11 "Finished codegen for target automatalab_server"
 .PHONY : CMakeFiles/automatalab_server.dir/codegen
 
 # clean rule for target.
@@ -199,12 +202,12 @@ CMakeFiles/automatalab_server.dir/clean:
 CMakeFiles/automatalab_tests.dir/all: CMakeFiles/AutomataEngine.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_tests.dir\build.make CMakeFiles/automatalab_tests.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_tests.dir\build.make CMakeFiles/automatalab_tests.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=8,9,10,11,12 "Built target automatalab_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=12,13,14,15,16,17 "Built target automatalab_tests"
 .PHONY : CMakeFiles/automatalab_tests.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/automatalab_tests.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 10
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/automatalab_tests.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 0
 .PHONY : CMakeFiles/automatalab_tests.dir/rule
@@ -216,13 +219,45 @@ automatalab_tests: CMakeFiles/automatalab_tests.dir/rule
 # codegen rule for target.
 CMakeFiles/automatalab_tests.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_tests.dir\build.make CMakeFiles/automatalab_tests.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=8,9,10,11,12 "Finished codegen for target automatalab_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=12,13,14,15,16,17 "Finished codegen for target automatalab_tests"
 .PHONY : CMakeFiles/automatalab_tests.dir/codegen
 
 # clean rule for target.
 CMakeFiles/automatalab_tests.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_tests.dir\build.make CMakeFiles/automatalab_tests.dir/clean
 .PHONY : CMakeFiles/automatalab_tests.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/automatalab_cli.dir
+
+# All Build rule for target.
+CMakeFiles/automatalab_cli.dir/all: CMakeFiles/AutomataEngine.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_cli.dir\build.make CMakeFiles/automatalab_cli.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_cli.dir\build.make CMakeFiles/automatalab_cli.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=8,9 "Built target automatalab_cli"
+.PHONY : CMakeFiles/automatalab_cli.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/automatalab_cli.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 9
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/automatalab_cli.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\TOC_CP\backend\build\CMakeFiles 0
+.PHONY : CMakeFiles/automatalab_cli.dir/rule
+
+# Convenience name for target.
+automatalab_cli: CMakeFiles/automatalab_cli.dir/rule
+.PHONY : automatalab_cli
+
+# codegen rule for target.
+CMakeFiles/automatalab_cli.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_cli.dir\build.make CMakeFiles/automatalab_cli.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=D:\TOC_CP\backend\build\CMakeFiles --progress-num=8,9 "Finished codegen for target automatalab_cli"
+.PHONY : CMakeFiles/automatalab_cli.dir/codegen
+
+# clean rule for target.
+CMakeFiles/automatalab_cli.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_cli.dir\build.make CMakeFiles/automatalab_cli.dir/clean
+.PHONY : CMakeFiles/automatalab_cli.dir/clean
 
 #=============================================================================
 # Target rules for target _deps/crow-build/CMakeFiles/uninstall.dir

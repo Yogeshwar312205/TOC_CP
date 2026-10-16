@@ -230,6 +230,19 @@ automatalab_tests/fast:
 .PHONY : automatalab_tests/fast
 
 #=============================================================================
+# Target rules for targets named automatalab_cli
+
+# Build rule for target.
+automatalab_cli: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 automatalab_cli
+.PHONY : automatalab_cli
+
+# fast build rule for target.
+automatalab_cli/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_cli.dir\build.make CMakeFiles/automatalab_cli.dir/build
+.PHONY : automatalab_cli/fast
+
+#=============================================================================
 # Target rules for targets named uninstall
 
 # Build rule for target.
@@ -290,6 +303,54 @@ src/Minimization.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/src/Minimization.cpp.s
 .PHONY : src/Minimization.cpp.s
 
+src/RegexParser.obj: src/RegexParser.cpp.obj
+.PHONY : src/RegexParser.obj
+
+# target to build an object file
+src/RegexParser.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj
+.PHONY : src/RegexParser.cpp.obj
+
+src/RegexParser.i: src/RegexParser.cpp.i
+.PHONY : src/RegexParser.i
+
+# target to preprocess a source file
+src/RegexParser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.i
+.PHONY : src/RegexParser.cpp.i
+
+src/RegexParser.s: src/RegexParser.cpp.s
+.PHONY : src/RegexParser.s
+
+# target to generate assembly for a file
+src/RegexParser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.s
+.PHONY : src/RegexParser.cpp.s
+
+src/RegexToNFA.obj: src/RegexToNFA.cpp.obj
+.PHONY : src/RegexToNFA.obj
+
+# target to build an object file
+src/RegexToNFA.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.obj
+.PHONY : src/RegexToNFA.cpp.obj
+
+src/RegexToNFA.i: src/RegexToNFA.cpp.i
+.PHONY : src/RegexToNFA.i
+
+# target to preprocess a source file
+src/RegexToNFA.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.i
+.PHONY : src/RegexToNFA.cpp.i
+
+src/RegexToNFA.s: src/RegexToNFA.cpp.s
+.PHONY : src/RegexToNFA.s
+
+# target to generate assembly for a file
+src/RegexToNFA.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/src/RegexToNFA.cpp.s
+.PHONY : src/RegexToNFA.cpp.s
+
 src/Simulator.obj: src/Simulator.cpp.obj
 .PHONY : src/Simulator.obj
 
@@ -337,6 +398,30 @@ src/Validation.s: src/Validation.cpp.s
 src/Validation.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\AutomataEngine.dir\build.make CMakeFiles/AutomataEngine.dir/src/Validation.cpp.s
 .PHONY : src/Validation.cpp.s
+
+src/cli.obj: src/cli.cpp.obj
+.PHONY : src/cli.obj
+
+# target to build an object file
+src/cli.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_cli.dir\build.make CMakeFiles/automatalab_cli.dir/src/cli.cpp.obj
+.PHONY : src/cli.cpp.obj
+
+src/cli.i: src/cli.cpp.i
+.PHONY : src/cli.i
+
+# target to preprocess a source file
+src/cli.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_cli.dir\build.make CMakeFiles/automatalab_cli.dir/src/cli.cpp.i
+.PHONY : src/cli.cpp.i
+
+src/cli.s: src/cli.cpp.s
+.PHONY : src/cli.s
+
+# target to generate assembly for a file
+src/cli.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_cli.dir\build.make CMakeFiles/automatalab_cli.dir/src/cli.cpp.s
+.PHONY : src/cli.cpp.s
 
 src/main.obj: src/main.cpp.obj
 .PHONY : src/main.obj
@@ -434,6 +519,30 @@ tests/test_minimization.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_tests.dir\build.make CMakeFiles/automatalab_tests.dir/tests/test_minimization.cpp.s
 .PHONY : tests/test_minimization.cpp.s
 
+tests/test_regex.obj: tests/test_regex.cpp.obj
+.PHONY : tests/test_regex.obj
+
+# target to build an object file
+tests/test_regex.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_tests.dir\build.make CMakeFiles/automatalab_tests.dir/tests/test_regex.cpp.obj
+.PHONY : tests/test_regex.cpp.obj
+
+tests/test_regex.i: tests/test_regex.cpp.i
+.PHONY : tests/test_regex.i
+
+# target to preprocess a source file
+tests/test_regex.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_tests.dir\build.make CMakeFiles/automatalab_tests.dir/tests/test_regex.cpp.i
+.PHONY : tests/test_regex.cpp.i
+
+tests/test_regex.s: tests/test_regex.cpp.s
+.PHONY : tests/test_regex.s
+
+# target to generate assembly for a file
+tests/test_regex.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\automatalab_tests.dir\build.make CMakeFiles/automatalab_tests.dir/tests/test_regex.cpp.s
+.PHONY : tests/test_regex.cpp.s
+
 tests/test_simulator.obj: tests/test_simulator.cpp.obj
 .PHONY : tests/test_simulator.obj
 
@@ -475,6 +584,7 @@ help:
 	@echo ... test
 	@echo ... uninstall
 	@echo ... AutomataEngine
+	@echo ... automatalab_cli
 	@echo ... automatalab_server
 	@echo ... automatalab_tests
 	@echo ... src/Conversion.obj
@@ -483,12 +593,21 @@ help:
 	@echo ... src/Minimization.obj
 	@echo ... src/Minimization.i
 	@echo ... src/Minimization.s
+	@echo ... src/RegexParser.obj
+	@echo ... src/RegexParser.i
+	@echo ... src/RegexParser.s
+	@echo ... src/RegexToNFA.obj
+	@echo ... src/RegexToNFA.i
+	@echo ... src/RegexToNFA.s
 	@echo ... src/Simulator.obj
 	@echo ... src/Simulator.i
 	@echo ... src/Simulator.s
 	@echo ... src/Validation.obj
 	@echo ... src/Validation.i
 	@echo ... src/Validation.s
+	@echo ... src/cli.obj
+	@echo ... src/cli.i
+	@echo ... src/cli.s
 	@echo ... src/main.obj
 	@echo ... src/main.i
 	@echo ... src/main.s
@@ -501,6 +620,9 @@ help:
 	@echo ... tests/test_minimization.obj
 	@echo ... tests/test_minimization.i
 	@echo ... tests/test_minimization.s
+	@echo ... tests/test_regex.obj
+	@echo ... tests/test_regex.i
+	@echo ... tests/test_regex.s
 	@echo ... tests/test_simulator.obj
 	@echo ... tests/test_simulator.i
 	@echo ... tests/test_simulator.s

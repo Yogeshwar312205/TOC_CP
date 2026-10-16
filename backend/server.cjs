@@ -1,4 +1,10 @@
 const http = require('http');
+const { spawnSync } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+const { interpretLanguageWithAI, PRESET_PATTERNS } = require('./aiService.cjs');
+const { parseRegex, buildThompsonNFA } = require('./regexEngine.cjs');
+
 const PORT = process.env.PORT || 8080;
 
 // Epsilon symbol UTF-8 string
@@ -313,6 +319,77 @@ function minimizeDfa(inputDfa) {
   };
 }
 
+// Pipeline executor: invokes C++ automatalab_cli binary when present, with Node fallback
+function executeAutomataPipeline(alphabet, regex) {
+  const cliPaths = [
+    path.join(__dirname, 'build', 'automatalab_cli.exe'),
+    path.join(__dirname, 'build', 'automatalab_cli'),
+    path.join(__dirname, 'automatalab_cli.exe'),
+  ];
+
+  for (const cliPath of cliPaths) {
+    if (fs.existsSync(cliPath)) {
+      try {
+        const proc = spawnSync(cliPath, [], {
+          input: JSON.stringify({ alphabet, regex }),
+          encoding: 'utf8',
+          timeout: 10000,
+          windowsHide: true,
+        });
+
+        if (proc.status === 0 && proc.stdout) {
+          const parsed = JSON.parse(proc.stdout.trim());
+          if (parsed.success) {
+            parsed.engine = 'cpp';
+            return parsed;
+          }
+          return { success: false, error: parsed.error, code: parsed.code };
+        }
+      } catch (err) {
+        console.warn('C++ CLI failed, falling back to Node engine:', err.message);
+      }
+    }
+  }
+
+  // Fallback to internal Node.js engine
+  const parseRes = parseRegex(regex, alphabet);
+  if (!parseRes.success) {
+    return { success: false, error: parseRes.error, code: 'REGEX_PARSE_ERROR' };
+  }
+
+  const nfa = buildThompsonNFA(parseRes.root, alphabet);
+  const convRes = nfaToDfa(nfa);
+  const minRes = minimizeDfa(convRes.dfa);
+
+  const dfaStates = convRes.dfa.states.length;
+  const minStates = minRes.minimizedDfa.states.length;
+  const reduction = dfaStates > 0 ? Math.max(0, ((dfaStates - minStates) / dfaStates) * 100) : 0;
+
+  return {
+    success: true,
+    engine: 'node',
+    normalizedRegex: parseRes.normalizedRegex,
+    automata: {
+      epsilonNFA: nfa,
+      dfa: convRes.dfa,
+      minimizedDFA: minRes.minimizedDfa,
+    },
+    metrics: {
+      epsilonNFAStates: nfa.states.length,
+      dfaStates: dfaStates,
+      minimizedDFAStates: minStates,
+      epsilonNFATransitions: nfa.transitions.length,
+      dfaTransitions: convRes.dfa.transitions.length,
+      minimizedDFATransitions: minRes.minimizedDfa.transitions.length,
+      stateReductionPercentage: reduction,
+    },
+    traces: {
+      conversion: convRes.steps,
+      minimization: minRes.table,
+    },
+  };
+}
+
 // Create HTTP Server
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -327,7 +404,7 @@ const server = http.createServer((req, res) => {
 
   let body = '';
   req.on('data', (chunk) => (body += chunk));
-  req.on('end', () => {
+  req.on('end', async () => {
     try {
       const url = req.url;
 
@@ -367,10 +444,12 @@ const server = http.createServer((req, res) => {
       }
 
       if (url === '/api/simulate' && req.method === 'POST') {
-        const { dfa, input } = JSON.parse(body);
+        const { dfa, input: rawInput } = JSON.parse(body);
+        const input = (rawInput === 'ε' || rawInput === 'eps' || rawInput === 'epsilon') ? '' : String(rawInput ?? '');
         let cur = dfa.startState;
         const steps = [];
         let accepted = true;
+        let rejectionReason = '';
 
         steps.push({
           stepIndex: 0,
@@ -378,14 +457,23 @@ const server = http.createServer((req, res) => {
           symbolRead: '',
           nextState: cur,
           remainingString: input,
-          description: `START: ${cur}`,
+          description: `START: State '${cur}'`,
         });
 
         for (let i = 0; i < input.length; i++) {
           const sym = input[i];
-          const tr = dfa.transitions.find((t) => t.from === cur && t.symbol === sym);
+          const tr = (dfa.transitions || []).find((t) => t.from === cur && t.symbol === sym);
           if (!tr) {
             accepted = false;
+            rejectionReason = `No transition from state '${cur}' on symbol '${sym}'`;
+            steps.push({
+              stepIndex: i + 1,
+              currentState: cur,
+              symbolRead: sym,
+              nextState: '∅',
+              remainingString: input.slice(i + 1),
+              description: `DEAD END: No transition from '${cur}' on symbol '${sym}'`,
+            });
             break;
           }
           cur = tr.to;
@@ -400,58 +488,286 @@ const server = http.createServer((req, res) => {
         }
 
         const finals = dfa.finalStates || dfa.acceptStates || [];
-        if (!finals.includes(cur)) accepted = false;
+        if (accepted && !finals.includes(cur)) {
+          accepted = false;
+          rejectionReason = `Halted in non-accepting state '${cur}'`;
+        }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(
           JSON.stringify({
             success: true,
-            data: { accepted, finalState: cur, rejectionReason: accepted ? '' : 'String rejected', steps },
+            data: {
+              accepted,
+              finalState: cur,
+              rejectionReason,
+              steps,
+            },
           })
         );
         return;
       }
 
       if (url === '/api/nfa-simulate' && req.method === 'POST') {
-        const { nfa, input } = JSON.parse(body);
+        const { nfa, input: rawInput } = JSON.parse(body);
+        const input = (rawInput === 'ε' || rawInput === 'eps' || rawInput === 'epsilon') ? '' : String(rawInput ?? '');
         let curStates = epsilonClosure(nfa, nfa.startState);
         const trace = [];
+
+        // Initial step: epsilon-closure of start state
+        const initialEpsTransitions = [];
+        for (const tr of nfa.transitions || []) {
+          if (isEpsilon(tr.symbol) && curStates.includes(tr.from)) {
+            const dests = Array.isArray(tr.to) ? tr.to : [tr.to];
+            for (const d of dests) {
+              if (curStates.includes(d)) {
+                initialEpsTransitions.push({ from: tr.from, symbol: tr.symbol, to: d });
+              }
+            }
+          }
+        }
 
         trace.push({
           stepIndex: 0,
           activeStates: curStates,
           symbolRead: '',
           remainingString: input,
-          transitionsTaken: [],
-          description: `START: {${curStates.join(',')}}`,
+          transitionsTaken: initialEpsTransitions,
+          description: `START: ε-closure(${nfa.startState}) = {${curStates.join(', ')}}`,
         });
+
+        let rejectedEarly = false;
+        let rejectionReason = '';
 
         for (let i = 0; i < input.length; i++) {
           const sym = input[i];
-          const moveSet = move(nfa, curStates, sym);
-          const closure = epsilonClosure(nfa, moveSet);
+          const transitionsTaken = [];
+          const moveSet = new Set();
+
+          for (const st of curStates) {
+            for (const tr of nfa.transitions || []) {
+              if (tr.from === st && tr.symbol === sym) {
+                const dests = Array.isArray(tr.to) ? tr.to : [tr.to];
+                for (const d of dests) {
+                  moveSet.add(d);
+                  transitionsTaken.push({ from: st, symbol: sym, to: d });
+                }
+              }
+            }
+          }
+
+          const moveArr = Array.from(moveSet).sort();
+          const closure = epsilonClosure(nfa, moveArr);
+
+          // Record epsilon transitions taken during closure computation
+          for (const tr of nfa.transitions || []) {
+            if (isEpsilon(tr.symbol) && closure.includes(tr.from)) {
+              const dests = Array.isArray(tr.to) ? tr.to : [tr.to];
+              for (const d of dests) {
+                if (closure.includes(d)) {
+                  transitionsTaken.push({ from: tr.from, symbol: tr.symbol, to: d });
+                }
+              }
+            }
+          }
+
           curStates = closure;
+
+          if (curStates.length === 0) {
+            rejectedEarly = true;
+            rejectionReason = `No transitions on '${sym}' — active state set became empty ∅`;
+            trace.push({
+              stepIndex: i + 1,
+              activeStates: [],
+              symbolRead: sym,
+              remainingString: input.slice(i + 1),
+              transitionsTaken,
+              description: `move on '${sym}' ➔ ∅ (No paths remaining)`,
+            });
+            break;
+          }
 
           trace.push({
             stepIndex: i + 1,
             activeStates: curStates,
             symbolRead: sym,
             remainingString: input.slice(i + 1),
-            transitionsTaken: [],
-            description: `move on '${sym}' ➔ {${closure.join(',')}}`,
+            transitionsTaken,
+            description: `move on '${sym}' ➔ {${moveArr.join(',') || '∅'}} | ε-closure ➔ {${closure.join(', ')}}`,
           });
         }
 
         const finals = nfa.finalStates || nfa.acceptStates || [];
-        const accepted = curStates.some((st) => finals.includes(st));
+        const accepted = !rejectedEarly && curStates.some((st) => finals.includes(st));
+
+        if (!accepted && !rejectionReason) {
+          rejectionReason = `None of the final active states {${curStates.join(', ')}} are accept states`;
+        }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(
           JSON.stringify({
             success: true,
-            data: { accepted, trace, rejectionReason: accepted ? '' : 'NFA rejected' },
+            data: { accepted, trace, rejectionReason },
           })
         );
+        return;
+      }
+
+      if (url === '/api/language-to-automata' && req.method === 'POST') {
+        let reqData;
+        try {
+          reqData = JSON.parse(body);
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: 'Malformed JSON in request body' }));
+          return;
+        }
+
+        const { alphabet, description, regexOverride } = reqData;
+
+        // Validation
+        if (!Array.isArray(alphabet) || alphabet.length === 0) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: 'Alphabet must be a non-empty array of symbols' }));
+          return;
+        }
+
+        const cleanAlphabet = Array.from(new Set(alphabet.map((s) => String(s).trim()).filter(Boolean)));
+        if (cleanAlphabet.length === 0) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: 'Alphabet contains no valid symbols' }));
+          return;
+        }
+
+        if (!regexOverride && (!description || typeof description !== 'string' || !description.trim())) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: 'Language description cannot be empty' }));
+          return;
+        }
+
+        let interpretation;
+        let candidateRegex = '';
+
+        if (regexOverride && typeof regexOverride === 'string' && regexOverride.trim()) {
+          candidateRegex = regexOverride.trim();
+          interpretation = {
+            status: 'success',
+            normalizedDescription: description ? description.trim() : 'Custom regular expression',
+            alphabet: cleanAlphabet,
+            regularExpression: candidateRegex,
+            explanation: 'Automata generated directly from user-provided regular expression.',
+            assumptions: ['User provided direct regular expression override.'],
+            confidence: 1.0,
+          };
+        } else {
+          const aiRes = await interpretLanguageWithAI(description.trim(), cleanAlphabet);
+
+          if (!aiRes.success) {
+            res.writeHead(aiRes.code === 'API_KEY_MISSING' ? 400 : 500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: aiRes.error, code: aiRes.code }));
+            return;
+          }
+
+          interpretation = aiRes.data;
+
+          if (interpretation.status !== 'success') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(
+              JSON.stringify({
+                success: false,
+                status: interpretation.status,
+                interpretation,
+                error:
+                  interpretation.status === 'non_regular'
+                    ? `Language is non-regular: ${interpretation.explanation}`
+                    : `Clarification needed: ${interpretation.explanation}`,
+              })
+            );
+            return;
+          }
+
+          candidateRegex = interpretation.regularExpression;
+        }
+
+        // Run C++ or Node automata pipeline
+        const pipelineRes = executeAutomataPipeline(cleanAlphabet, candidateRegex);
+
+        if (!pipelineRes.success) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              success: false,
+              error: pipelineRes.error,
+              code: pipelineRes.code || 'PIPELINE_ERROR',
+              interpretation,
+            })
+          );
+          return;
+        }
+
+        // Return successful generated response
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            success: true,
+            interpretation,
+            automata: pipelineRes.automata,
+            metrics: pipelineRes.metrics,
+            traces: pipelineRes.traces,
+            engine: pipelineRes.engine,
+          })
+        );
+        return;
+      }
+
+      if (url === '/api/examples' && req.method === 'GET') {
+        const examples = [
+          {
+            id: 'contains-bbb',
+            name: 'Contains bbb',
+            description: "Strings containing three consecutive b's ('bbb')",
+            alphabet: ['a', 'b'],
+            regex: '(a+b)*bbb(a+b)*',
+          },
+          {
+            id: 'ends-with-01',
+            name: 'Ends with 01',
+            description: "Strings over {0,1} ending in '01'",
+            alphabet: ['0', '1'],
+            regex: '(0+1)*01',
+          },
+          {
+            id: 'starts-with-0',
+            name: 'Starts with 0',
+            description: "Strings over {0,1} starting with '0'",
+            alphabet: ['0', '1'],
+            regex: '0(0+1)*',
+          },
+          {
+            id: 'contains-ab',
+            name: 'Contains ab',
+            description: "Strings over {a,b} containing 'ab' as a substring",
+            alphabet: ['a', 'b'],
+            regex: '(a+b)*ab(a+b)*',
+          },
+          {
+            id: 'even-ones',
+            name: 'Even number of 1s',
+            description: "Strings over {0,1} containing an even number of '1's",
+            alphabet: ['0', '1'],
+            regex: '0*(10*10*)*',
+          },
+          {
+            id: 'exactly-two-as',
+            name: 'Exactly two a-s',
+            description: "Strings over {a,b} with exactly two occurrences of 'a'",
+            alphabet: ['a', 'b'],
+            regex: 'b*ab*ab*',
+          },
+        ];
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, data: { examples } }));
         return;
       }
 

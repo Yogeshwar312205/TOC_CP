@@ -13,6 +13,7 @@ import {
   Activity,
   X,
   Cpu,
+  Bot,
 } from 'lucide-react';
 import { useAutomataStore } from '../../store/automataStore';
 import { apiService } from '../../services/api';
@@ -26,6 +27,7 @@ const navItems = [
   { path: '/simulator', label: 'String Simulator', icon: PlayCircle },
   { path: '/comparison', label: 'NFA vs DFA', icon: Split },
   { path: '/examples', label: 'Sample Library', icon: FolderOpen },
+  { path: '/language-to-automata', label: 'AI: Language to Automata', icon: Bot, highlight: true },
 ];
 
 interface SidebarProps {
@@ -86,21 +88,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const isHighlight = (item as any).highlight;
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 shadow-md shadow-cyan-500/10'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80'
-                  }`
+                  isHighlight
+                    ? `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group mt-1 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-purple-600/25 to-cyan-600/25 text-purple-300 border border-purple-500/40 shadow-md shadow-purple-900/20'
+                          : 'text-purple-300/80 hover:text-purple-200 hover:bg-purple-900/20 border border-transparent hover:border-purple-500/20'
+                      }`
+                    : `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
+                        isActive
+                          ? 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 shadow-md shadow-cyan-500/10'
+                          : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 border border-transparent'
+                      }`
                 }
               >
-                <Icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
+                <Icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${isHighlight ? 'text-purple-400' : ''}`} />
                 <span className="truncate">{item.label}</span>
+                {isHighlight && (
+                  <span className="ml-auto px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">
+                    AI
+                  </span>
+                )}
               </NavLink>
             );
           })}

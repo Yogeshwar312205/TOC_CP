@@ -1,6 +1,7 @@
 D:/TOC_CP/backend/build/CMakeFiles/AutomataEngine.dir
 D:/TOC_CP/backend/build/CMakeFiles/automatalab_server.dir
 D:/TOC_CP/backend/build/CMakeFiles/automatalab_tests.dir
+D:/TOC_CP/backend/build/CMakeFiles/automatalab_cli.dir
 D:/TOC_CP/backend/build/CMakeFiles/package.dir
 D:/TOC_CP/backend/build/CMakeFiles/package_source.dir
 D:/TOC_CP/backend/build/CMakeFiles/test.dir

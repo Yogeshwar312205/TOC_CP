@@ -9,6 +9,7 @@ import { MinimizationPage } from './pages/MinimizationPage';
 import { SimulatorPage } from './pages/SimulatorPage';
 import { ComparisonPage } from './pages/ComparisonPage';
 import { ExamplesPage } from './pages/ExamplesPage';
+import { NaturalLanguagePage } from './pages/NaturalLanguagePage';
 import { useAutomataStore } from './store/automataStore';
 import { AlertCircle, X } from 'lucide-react';
 
@@ -43,6 +44,7 @@ export const App: React.FC = () => {
           <Route path="/simulator" element={<SimulatorPage />} />
           <Route path="/comparison" element={<ComparisonPage />} />
           <Route path="/examples" element={<ExamplesPage />} />
+          <Route path="/language-to-automata" element={<NaturalLanguagePage />} />
         </Routes>
       </Layout>
     </Router>

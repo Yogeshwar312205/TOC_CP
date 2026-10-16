@@ -8386,3 +8386,105 @@ events:
         - "C:/Program Files/CMake"
         - "C:/Program Files (x86)/AutomataLab"
 ...
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/FindPython/Support.cmake:2631 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/FindPython3.cmake:699 (include)"
+      - "build/_deps/crow-src/CMakeLists.txt:44 (find_package)"
+    mode: "program"
+    variable: "_Python3_EXECUTABLE_DEBUG"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "python3.13_d"
+      - "python3_d"
+      - "python_d"
+    candidate_directories:
+      - "C:/Program Files/Python313/"
+    searched_directories:
+      - "C:/Program Files/Python313/python3.13_d.com"
+      - "C:/Program Files/Python313/python3.13_d.exe"
+      - "C:/Program Files/Python313/python3.13_d"
+      - "C:/Program Files/Python313/python3_d.com"
+      - "C:/Program Files/Python313/python3_d.exe"
+      - "C:/Program Files/Python313/python3_d"
+      - "C:/Program Files/Python313/python_d.com"
+      - "C:/Program Files/Python313/python_d.exe"
+      - "C:/Program Files/Python313/python_d"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Yogeshwar/.gemini/antigravity/bin"
+        - "C:\\Users\\Yogeshwar\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.101-hotspot\\bin"
+        - "C:\\Program Files\\Python313\\Scripts\\"
+        - "C:\\Program Files\\Python313\\"
+        - "C:\\windows\\system32"
+        - "C:\\windows"
+        - "C:\\windows\\System32\\Wbem"
+        - "C:\\windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR"
+        - "C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\HP\\OMEN-Broadcast\\Common"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\MinGW\\bin"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\Yogeshwar\\AppData\\Local\\Android\\Sdk\\platform-tools"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files\\Amazon\\AWSCLIV2\\"
+        - "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.101-hotspot\\bin"
+        - "C:\\Program Files\\Python313\\Scripts\\"
+        - "C:\\Program Files\\Python313\\"
+        - "C:\\windows\\system32"
+        - "C:\\windows"
+        - "C:\\windows\\System32\\Wbem"
+        - "C:\\windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR"
+        - "C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\HP\\OMEN-Broadcast\\Common"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\MinGW\\bin"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\Yogeshwar\\AppData\\Local\\Android\\Sdk\\platform-tools"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\Yogeshwar\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\"
+        - "C:\\Users\\Yogeshwar\\AppData\\Local\\Programs\\Python\\Python311\\"
+        - "C:\\Program Files\\MySQL\\MySQL Shell 8.0\\bin\\"
+        - "C:\\Users\\Yogeshwar\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Yogeshwar\\AppData\\Loca"
+        - "C:\\Users\\Yogeshwar\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin"
+        - "C:\\Users\\Yogeshwar\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/AutomataLab"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/AutomataLab"
+...

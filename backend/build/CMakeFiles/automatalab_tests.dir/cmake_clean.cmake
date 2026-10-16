@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/automatalab_tests.dir/tests/test_main.cpp.obj.d"
   "CMakeFiles/automatalab_tests.dir/tests/test_minimization.cpp.obj"
   "CMakeFiles/automatalab_tests.dir/tests/test_minimization.cpp.obj.d"
+  "CMakeFiles/automatalab_tests.dir/tests/test_regex.cpp.obj"
+  "CMakeFiles/automatalab_tests.dir/tests/test_regex.cpp.obj.d"
   "CMakeFiles/automatalab_tests.dir/tests/test_simulator.cpp.obj"
   "CMakeFiles/automatalab_tests.dir/tests/test_simulator.cpp.obj.d"
   "automatalab_tests.exe"

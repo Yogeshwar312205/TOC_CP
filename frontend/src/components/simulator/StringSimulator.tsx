@@ -9,13 +9,25 @@ interface StringSimulatorProps {
     activeStates: string[],
     activeTransitions: { from: string; symbol: string; to: string }[]
   ) => void;
+  targetType?: 'NFA' | 'DFA' | 'MIN_DFA';
+  onTargetTypeChange?: (type: 'NFA' | 'DFA' | 'MIN_DFA') => void;
 }
 
-export const StringSimulator: React.FC<StringSimulatorProps> = ({ onStepHighlight }) => {
+export const StringSimulator: React.FC<StringSimulatorProps> = ({
+  onStepHighlight,
+  targetType: propTargetType,
+  onTargetTypeChange,
+}) => {
   const { nfa, dfa, minimizationResult, setIsLoading, setError } = useAutomataStore();
 
   const [inputString, setInputString] = useState('0101');
-  const [targetType, setTargetType] = useState<'NFA' | 'DFA' | 'MIN_DFA'>('NFA');
+  const [internalTargetType, setInternalTargetType] = useState<'NFA' | 'DFA' | 'MIN_DFA'>('NFA');
+  const targetType = propTargetType !== undefined ? propTargetType : internalTargetType;
+
+  const setTargetType = (type: 'NFA' | 'DFA' | 'MIN_DFA') => {
+    setInternalTargetType(type);
+    if (onTargetTypeChange) onTargetTypeChange(type);
+  };
   const [stepIndex, setStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 

@@ -11,6 +11,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "D:/TOC_CP/backend/tests/test_conversion.cpp" "CMakeFiles/automatalab_tests.dir/tests/test_conversion.cpp.obj" "gcc" "CMakeFiles/automatalab_tests.dir/tests/test_conversion.cpp.obj.d"
   "D:/TOC_CP/backend/tests/test_main.cpp" "CMakeFiles/automatalab_tests.dir/tests/test_main.cpp.obj" "gcc" "CMakeFiles/automatalab_tests.dir/tests/test_main.cpp.obj.d"
   "D:/TOC_CP/backend/tests/test_minimization.cpp" "CMakeFiles/automatalab_tests.dir/tests/test_minimization.cpp.obj" "gcc" "CMakeFiles/automatalab_tests.dir/tests/test_minimization.cpp.obj.d"
+  "D:/TOC_CP/backend/tests/test_regex.cpp" "CMakeFiles/automatalab_tests.dir/tests/test_regex.cpp.obj" "gcc" "CMakeFiles/automatalab_tests.dir/tests/test_regex.cpp.obj.d"
   "D:/TOC_CP/backend/tests/test_simulator.cpp" "CMakeFiles/automatalab_tests.dir/tests/test_simulator.cpp.obj" "gcc" "CMakeFiles/automatalab_tests.dir/tests/test_simulator.cpp.obj.d"
   )
 
