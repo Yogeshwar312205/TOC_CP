@@ -41,5 +41,9 @@ StateSet epsilonClosure(const NFA& nfa, const StateSet& states);
 /// Compute move(states, symbol): all states reachable from 'states' via 'symbol'
 StateSet move(const NFA& nfa, const StateSet& states, const Symbol& symbol);
 
-/// Run the full subset construction algorithm, recording every step
-ConversionResult nfaToDfa(const NFA& nfa);
+/// Complete an existing DFA by routing any undefined transitions to a dead/trap state
+DFA completeDFA(const DFA& dfa);
+
+/// Run the full subset construction algorithm, recording every step.
+/// complete: if true (default), constructs a complete DFA routing empty transitions to a dead state.
+ConversionResult nfaToDfa(const NFA& nfa, bool complete = true);

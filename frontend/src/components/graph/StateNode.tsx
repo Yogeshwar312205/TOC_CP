@@ -7,6 +7,7 @@ export interface StateNodeData {
   isAccept?: boolean;
   isActive?: boolean;
   isUnreachable?: boolean;
+  isDead?: boolean;
   substates?: string[];
   [key: string]: unknown;
 }
@@ -17,6 +18,7 @@ export const StateNode = memo(({ data }: NodeProps) => {
   const isAccept = nodeData.isAccept;
   const isActive = nodeData.isActive;
   const isUnreachable = nodeData.isUnreachable;
+  const isDead = nodeData.isDead;
   const label = nodeData.label;
 
   let borderColor = 'border-cyan-500/50';
@@ -41,13 +43,17 @@ export const StateNode = memo(({ data }: NodeProps) => {
     borderColor = 'border-purple-500';
     textColor = 'text-purple-300';
     glow = 'shadow-[0_0_15px_rgba(168,85,247,0.3)]';
+  } else if (isDead) {
+    borderColor = 'border-slate-600';
+    bgColor = 'bg-slate-950/90';
+    textColor = 'text-slate-300';
   }
 
   return (
     <div className="relative group">
       {/* Start State Indicator Arrow */}
       {isStart && (
-        <div className="absolute -left-7 top-1/2 -translate-y-1/2 flex items-center text-purple-400 font-bold text-lg">
+        <div className="absolute -left-7 top-1/2 -translate-y-1/2 flex items-center text-purple-400 font-bold text-lg select-none pointer-events-none">
           ➔
         </div>
       )}
@@ -55,7 +61,7 @@ export const StateNode = memo(({ data }: NodeProps) => {
       {/* Main Node Circle */}
       <div
         className={`w-14 h-14 rounded-full border-2 ${borderColor} ${bgColor} ${textColor} ${glow} backdrop-blur-md flex flex-col items-center justify-center font-mono font-bold text-sm transition-all duration-300 relative cursor-pointer hover:scale-105`}
-        title={`State: ${label}${isStart ? ' (Start State)' : ''}${isAccept ? ' (Accept State)' : ''}${isUnreachable ? ' (Unreachable)' : ''}`}
+        title={`State: ${label}${isStart ? ' (Start State)' : ''}${isAccept ? ' (Accept State)' : ''}${isDead ? ' (Dead / Trap State)' : ''}${isUnreachable ? ' (Unreachable)' : ''}`}
       >
         {/* Inner Circle for Accept States */}
         {isAccept && (
@@ -63,6 +69,12 @@ export const StateNode = memo(({ data }: NodeProps) => {
         )}
 
         <span className="z-10">{label}</span>
+
+        {isDead && (!nodeData.substates || nodeData.substates.length === 0) && (
+          <span className="text-[7px] text-slate-400 font-semibold uppercase tracking-wider z-10 px-1 rounded bg-slate-950/70 border border-slate-800">
+            TRAP
+          </span>
+        )}
 
         {nodeData.substates && nodeData.substates.length > 0 && (
           <span className="text-[8px] text-slate-400 font-normal truncate max-w-[46px] z-10 px-1 rounded bg-slate-950/60">

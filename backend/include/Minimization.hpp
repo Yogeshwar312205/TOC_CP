@@ -61,5 +61,6 @@ StateSet reachableStates(const DFA& dfa);
 /// Returns a DFA with unreachable states removed
 DFA removeUnreachableStates(const DFA& dfa);
 
-/// Run the full table-filling minimization, recording all steps
-MinimizationResult minimizeDfa(const DFA& dfa);
+/// Run the full table-filling minimization, recording all steps.
+/// complete: if true (default), ensures the input DFA is complete and preserves completeness in minimized result.
+MinimizationResult minimizeDfa(const DFA& dfa, bool complete = true);

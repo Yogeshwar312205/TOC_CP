@@ -1,4 +1,5 @@
 #include "../include/Minimization.hpp"
+#include "../include/Conversion.hpp"
 #include <queue>
 #include <algorithm>
 #include <sstream>
@@ -66,19 +67,20 @@ DFA removeUnreachableStates(const DFA& dfa) {
 // ─────────────────────────────────────────────────────────────────────────────
 // minimizeDfa — Table-Filling Algorithm
 // ─────────────────────────────────────────────────────────────────────────────
-MinimizationResult minimizeDfa(const DFA& input) {
+MinimizationResult minimizeDfa(const DFA& input, bool complete) {
     MinimizationResult result;
     result.success = true;
 
-    // ── Phase 1: remove unreachable states ───────────────────────────────────
-    result.originalDfa       = input;
-    result.reachableStates   = reachableStates(input);
+    // ── Phase 1: Ensure completeness and remove unreachable states ───────────
+    DFA workingInput = complete ? completeDFA(input) : input;
+    result.originalDfa       = workingInput;
+    result.reachableStates   = reachableStates(workingInput);
     result.unreachableStates = {};
-    for (const State& s : input.states) {
+    for (const State& s : workingInput.states) {
         if (!result.reachableStates.count(s))
             result.unreachableStates.insert(s);
     }
-    DFA dfa = removeUnreachableStates(input);
+    DFA dfa = removeUnreachableStates(workingInput);
     result.reachableDfa = dfa;
 
     // Collect sorted state list for deterministic pair ordering
@@ -241,37 +243,145 @@ MinimizationResult minimizeDfa(const DFA& input) {
         groups[rep].states.insert(s);
         groups[rep].representative = rep;
     }
-    for (auto& kv : groups) {
-        result.equivalenceGroups.push_back(kv.second);
+
+    // ── Phase 6: Construct minimized DFA with canonical state names ──────────
+    // Determine if any group is a dead/trap state group:
+    // Non-final, all alphabet transitions loop back to itself, not the start state, groups.size() > 1
+    State startRep = findState(dfa.startState);
+    std::string deadGroupRep = "";
+
+    for (const auto& kv : groups) {
+        const State& rep = kv.first;
+        if (rep == startRep) continue;
+
+        // Check if any state in group is final
+        bool hasFinal = false;
+        for (const State& s : kv.second.states) {
+            if (dfa.finalStates.count(s)) {
+                hasFinal = true;
+                break;
+            }
+        }
+        if (hasFinal) continue;
+
+        // Check if all transitions from this group stay in this group
+        bool allSelfLoop = true;
+        for (const Symbol& sym : dfa.alphabet) {
+            auto it = dfa.transitions.find({rep, sym});
+            if (it == dfa.transitions.end() || findState(it->second) != rep) {
+                allSelfLoop = false;
+                break;
+            }
+        }
+        if (allSelfLoop) {
+            deadGroupRep = rep;
+            break;
+        }
     }
 
-    // ── Phase 6: Construct minimized DFA ─────────────────────────────────────
+    // Order groups: start group first, then BFS over non-dead groups, dead group last
+    std::vector<State> orderedReps;
+    std::set<State> visitedReps;
+
+    orderedReps.push_back(startRep);
+    visitedReps.insert(startRep);
+
+    std::queue<State> bfsQ;
+    bfsQ.push(startRep);
+
+    std::vector<Symbol> sortedAlphabet(dfa.alphabet.begin(), dfa.alphabet.end());
+    std::sort(sortedAlphabet.begin(), sortedAlphabet.end());
+
+    while (!bfsQ.empty()) {
+        State curRep = bfsQ.front();
+        bfsQ.pop();
+
+        for (const Symbol& sym : sortedAlphabet) {
+            auto it = dfa.transitions.find({curRep, sym});
+            if (it != dfa.transitions.end()) {
+                State destRep = findState(it->second);
+                if (destRep != deadGroupRep && !visitedReps.count(destRep)) {
+                    visitedReps.insert(destRep);
+                    orderedReps.push_back(destRep);
+                    bfsQ.push(destRep);
+                }
+            }
+        }
+    }
+
+    // Add any remaining reachable non-dead groups in deterministic order
+    std::vector<State> remainingReps;
+    for (const auto& kv : groups) {
+        if (kv.first != deadGroupRep && !visitedReps.count(kv.first)) {
+            remainingReps.push_back(kv.first);
+        }
+    }
+    std::sort(remainingReps.begin(), remainingReps.end());
+    for (const State& r : remainingReps) {
+        orderedReps.push_back(r);
+        visitedReps.insert(r);
+    }
+
+    // Dead group placed last
+    if (!deadGroupRep.empty() && !visitedReps.count(deadGroupRep)) {
+        orderedReps.push_back(deadGroupRep);
+        visitedReps.insert(deadGroupRep);
+    }
+
+    // Assign canonical letter labels: A, B, C, D...
+    auto generateStateLabel = [](int index) -> std::string {
+        std::string label;
+        do {
+            label = static_cast<char>('A' + (index % 26)) + label;
+            index = index / 26 - 1;
+        } while (index >= 0);
+        return label;
+    };
+
+    std::map<State, State> repToCanonical;
+    int labelIdx = 0;
+    for (const State& rep : orderedReps) {
+        repToCanonical[rep] = generateStateLabel(labelIdx++);
+    }
+
+    // Construct minimized DFA
     DFA& minDfa = result.minimizedDfa;
     minDfa.alphabet = dfa.alphabet;
+    minDfa.startState = repToCanonical[startRep];
 
-    for (auto& kv : groups) {
-        const auto& rep = kv.first;
-        const auto& grp = kv.second;
-        minDfa.states.insert(rep);
-        minDfa.stateMapping[rep] = grp.states;
-    }
+    for (const State& rep : orderedReps) {
+        State canon = repToCanonical[rep];
+        minDfa.states.insert(canon);
+        minDfa.stateMapping[canon] = groups[rep].states;
 
-    // Start state
-    minDfa.startState = findState(dfa.startState);
-
-    // Final states
-    for (const State& fs : dfa.finalStates) {
-        minDfa.finalStates.insert(findState(fs));
+        bool hasFinal = false;
+        for (const State& s : groups[rep].states) {
+            if (dfa.finalStates.count(s)) {
+                hasFinal = true;
+                break;
+            }
+        }
+        if (hasFinal) {
+            minDfa.finalStates.insert(canon);
+        }
     }
 
     // Transitions
     for (const auto& kv : dfa.transitions) {
         const auto& key  = kv.first;
         const auto& dest = kv.second;
-        State repSrc  = findState(key.first);
-        State repDest = findState(dest);
+        State repSrc  = repToCanonical[findState(key.first)];
+        State repDest = repToCanonical[findState(dest)];
         minDfa.transitions[{repSrc, key.second}] = repDest;
+    }
+
+    // Update equivalenceGroups in result with canonical representatives
+    for (const auto& rep : orderedReps) {
+        EquivalenceGroup grp = groups[rep];
+        grp.representative = repToCanonical[rep];
+        result.equivalenceGroups.push_back(grp);
     }
 
     return result;
 }
+

@@ -58,6 +58,12 @@ const PRESETS: PresetItem[] = [
     testStrings: ['01', '101', '001', '1101', '100', '0', ''],
   },
   {
+    name: "Starts with '10'",
+    alphabet: ['0', '1'],
+    description: "All binary strings that start with '10'",
+    testStrings: ['10', '100', '10101', '11', '0', '110', ''],
+  },
+  {
     name: "Starts with '0'",
     alphabet: ['0', '1'],
     description: "Strings over {0,1} starting with 0",

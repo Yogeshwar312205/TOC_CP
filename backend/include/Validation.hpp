@@ -23,7 +23,7 @@ struct ValidationResult {
 // Public API
 // ─────────────────────────────────────────────────────────────────────────────
 ValidationResult validateNFA(const NFA& nfa);
-ValidationResult validateDFA(const DFA& dfa);
+ValidationResult validateDFA(const DFA& dfa, bool requireComplete = false);
 
 /// Parse NFA from nlohmann::json — returns populated NFA or throws std::invalid_argument
 /// (included via forward declaration so Validation.hpp doesn't drag in json.hpp everywhere)

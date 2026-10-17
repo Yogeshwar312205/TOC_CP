@@ -61,6 +61,18 @@ const PRESET_PATTERNS = [
     }),
   },
   {
+    matches: (desc) => /start(s|ing)?\s+with\s+('?10'?|10\b)/i.test(desc),
+    response: (alphabet) => ({
+      status: 'success',
+      normalizedDescription: "Strings starting with '10'",
+      alphabet: alphabet && alphabet.length ? alphabet : ['0', '1'],
+      regularExpression: '10(0+1)*',
+      explanation: "Any binary sequence beginning strictly with '10', followed by zero or more symbols from {0, 1}.",
+      assumptions: ["Prefix must be '10'."],
+      confidence: 0.99,
+    }),
+  },
+  {
     matches: (desc) => /start(s|ing)?\s+with\s+0/i.test(desc),
     response: (alphabet) => ({
       status: 'success',

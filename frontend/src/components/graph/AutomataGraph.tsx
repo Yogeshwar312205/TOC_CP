@@ -110,21 +110,38 @@ export const AutomataGraph: React.FC<AutomataGraphProps> = ({
 
     const stateMapping = (automaton as DFA).stateMapping || {};
 
-    const rawNodes: Node[] = (automaton.states || []).map((st) => ({
-      id: st,
-      type: 'stateNode',
-      position: { x: 0, y: 0 },
-      data: {
-        label: st,
-        isStart: st === automaton.startState,
-        isAccept:
-          (automaton.acceptStates && automaton.acceptStates.includes(st)) ||
-          (automaton.finalStates && automaton.finalStates.includes(st)),
-        isActive: false,
-        isUnreachable: false,
-        substates: stateMapping[st],
-      },
-    }));
+    const rawNodes: Node[] = (automaton.states || []).map((st) => {
+      const isStart = st === automaton.startState;
+      const isAccept =
+        (automaton.acceptStates && automaton.acceptStates.includes(st)) ||
+        (automaton.finalStates && automaton.finalStates.includes(st));
+
+      // A state is dead/trap if non-accepting, non-start, and all outgoing transitions loop to itself
+      const outgoing = (automaton.transitions || []).filter((t) => t.from === st);
+      const isDead =
+        !isAccept &&
+        !isStart &&
+        outgoing.length > 0 &&
+        outgoing.every((t) => {
+          const dests = Array.isArray(t.to) ? t.to : [t.to];
+          return dests.length === 1 && dests[0] === st;
+        });
+
+      return {
+        id: st,
+        type: 'stateNode',
+        position: { x: 0, y: 0 },
+        data: {
+          label: st,
+          isStart,
+          isAccept,
+          isDead,
+          isActive: false,
+          isUnreachable: false,
+          substates: stateMapping[st],
+        },
+      };
+    });
 
     // Group transitions by from -> to key
     const edgeGroupMap = new Map<string, { from: string; to: string; symbols: string[] }>();
@@ -280,6 +297,15 @@ export const AutomataGraph: React.FC<AutomataGraphProps> = ({
   };
 
   // Transitions for selected state
+  const totalTransitions = useMemo(() => {
+    if (!automaton?.transitions) return 0;
+    return automaton.transitions.reduce((acc, tr) => {
+      const dests = Array.isArray(tr.to) ? tr.to : [tr.to];
+      return acc + dests.filter(Boolean).length;
+    }, 0);
+  }, [automaton]);
+
+  // Transitions for selected state
   const selectedNodeDetails = useMemo(() => {
     if (!selectedState || !automaton) return null;
     const isStart = automaton.startState === selectedState;
@@ -294,10 +320,20 @@ export const AutomataGraph: React.FC<AutomataGraphProps> = ({
       return dests.includes(selectedState);
     });
 
+    const isDead =
+      !isAccept &&
+      !isStart &&
+      outgoing.length > 0 &&
+      outgoing.every((t) => {
+        const dests = Array.isArray(t.to) ? t.to : [t.to];
+        return dests.length === 1 && dests[0] === selectedState;
+      });
+
     return {
       name: selectedState,
       isStart,
       isAccept,
+      isDead,
       substates,
       outgoing,
       incoming,
@@ -318,7 +354,7 @@ export const AutomataGraph: React.FC<AutomataGraphProps> = ({
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
             <span>{title}</span>
             <span className="text-[10px] text-slate-400 font-normal">
-              ({automaton?.states?.length || 0} states, {automaton?.transitions?.length || 0} transitions)
+              ({automaton?.states?.length || 0} states, {totalTransitions} transitions)
             </span>
           </div>
         )}
@@ -402,6 +438,8 @@ export const AutomataGraph: React.FC<AutomataGraphProps> = ({
                     ? 'Start State'
                     : selectedNodeDetails.isAccept
                     ? 'Accept State (Final)'
+                    : selectedNodeDetails.isDead
+                    ? 'Dead / Trap State'
                     : 'Standard State'}
                 </p>
               </div>

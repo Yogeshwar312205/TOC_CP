@@ -281,6 +281,7 @@ CMakeFiles/AutomataEngine.dir/src/Minimization.cpp.obj: D:/TOC_CP/backend/src/Mi
   c:/mingw/lib/gcc/mingw32/6.3.0/include/stddef.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/stdint.h \
   d:/toc_cp/backend/include/Automaton.hpp \
+  d:/toc_cp/backend/include/conversion.hpp \
   d:/toc_cp/backend/include/minimization.hpp
 
 CMakeFiles/AutomataEngine.dir/src/RegexParser.cpp.obj: D:/TOC_CP/backend/src/RegexParser.cpp \

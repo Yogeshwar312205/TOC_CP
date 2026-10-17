@@ -164,8 +164,13 @@ int main(int argc, char* argv[]) {
             return 0;
         }
 
-        // 3. Subset construction: ε-NFA -> DFA (Calling existing nfaToDfa algorithm)
-        ConversionResult convRes = nfaToDfa(nfa);
+        bool complete = true;
+        if (req.contains("complete") && req["complete"].is_boolean()) {
+            complete = req["complete"].get<bool>();
+        }
+
+        // 3. Subset construction: ε-NFA -> DFA (Calling nfaToDfa algorithm)
+        ConversionResult convRes = nfaToDfa(nfa, complete);
         if (!convRes.success) {
             json err = {
                 {"success", false},
@@ -176,8 +181,8 @@ int main(int argc, char* argv[]) {
             return 0;
         }
 
-        // 4. DFA Minimization: DFA -> Minimized DFA (Calling existing minimizeDfa algorithm)
-        MinimizationResult minRes = minimizeDfa(convRes.dfa);
+        // 4. DFA Minimization: DFA -> Minimized DFA (Calling minimizeDfa algorithm)
+        MinimizationResult minRes = minimizeDfa(convRes.dfa, complete);
         if (!minRes.success) {
             json err = {
                 {"success", false},

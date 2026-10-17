@@ -119,6 +119,91 @@ async function runTests() {
     assert.strictEqual(res.data.automata.minimizedDFA.alphabet.length, 2);
   });
 
+  await test('POST /api/language-to-automata: All binary strings that start with 10', async () => {
+    const res = await request('POST', '/api/language-to-automata', {
+      alphabet: ['0', '1'],
+      description: "All binary strings that start with '10'",
+    });
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.data.success, true);
+
+    const minDfa = res.data.automata.minimizedDFA;
+    assert.strictEqual(minDfa.states.length, 4, `Expected 4 states in complete minimized DFA, got ${minDfa.states.length}: ${JSON.stringify(minDfa.states)}`);
+    assert.deepStrictEqual(minDfa.states.sort(), ['A', 'B', 'C', 'D']);
+    assert.strictEqual(minDfa.startState, 'A');
+    assert.deepStrictEqual(minDfa.finalStates, ['C']);
+
+    // Check complete transitions (8 total transitions, 1 per state/symbol)
+    const trans = {};
+    for (const t of minDfa.transitions) {
+      trans[`${t.from},${t.symbol}`] = t.to;
+    }
+    assert.strictEqual(trans['A,0'], 'D');
+    assert.strictEqual(trans['A,1'], 'B');
+    assert.strictEqual(trans['B,0'], 'C');
+    assert.strictEqual(trans['B,1'], 'D');
+    assert.strictEqual(trans['C,0'], 'C');
+    assert.strictEqual(trans['C,1'], 'C');
+    assert.strictEqual(trans['D,0'], 'D');
+    assert.strictEqual(trans['D,1'], 'D');
+
+    // Simulate required acceptance & rejection strings via /api/simulate
+    const testCases = [
+      { input: '10', expected: true },
+      { input: '100', expected: true },
+      { input: '10101', expected: true },
+      { input: '11', expected: false },
+      { input: '0', expected: false },
+      { input: '110', expected: false },
+      { input: '', expected: false },
+    ];
+
+    for (const tc of testCases) {
+      const simRes = await request('POST', '/api/simulate', {
+        dfa: minDfa,
+        input: tc.input,
+      });
+      assert.strictEqual(simRes.status, 200);
+      assert.strictEqual(
+        simRes.data.data.accepted,
+        tc.expected,
+        `String "${tc.input}" expected accepted=${tc.expected}, got ${simRes.data.data.accepted}`
+      );
+    }
+  });
+
+  await test('POST /api/minimize supports complete and partial DFA modes', async () => {
+    // 3-state partial DFA for 10(0+1)* without dead state
+    const partialDfa = {
+      states: ['A', 'B', 'C'],
+      alphabet: ['0', '1'],
+      startState: 'A',
+      finalStates: ['C'],
+      transitions: [
+        { from: 'A', symbol: '1', to: 'B' },
+        { from: 'B', symbol: '0', to: 'C' },
+        { from: 'C', symbol: '0', to: 'C' },
+        { from: 'C', symbol: '1', to: 'C' },
+      ],
+    };
+
+    // When complete: true (default), dead state D is added -> 4 states
+    const resComplete = await request('POST', '/api/minimize', {
+      dfa: partialDfa,
+      complete: true,
+    });
+    assert.strictEqual(resComplete.status, 200);
+    assert.strictEqual(resComplete.data.data.minimizedDfa.states.length, 4);
+
+    // When complete: false, dead state is not added -> 3 states
+    const resPartial = await request('POST', '/api/minimize', {
+      dfa: partialDfa,
+      complete: false,
+    });
+    assert.strictEqual(resPartial.status, 200);
+    assert.strictEqual(resPartial.data.data.minimizedDfa.states.length, 3);
+  });
+
   console.log(`\n=== API Tests: ${passed} passed, ${failed} failed ===`);
   process.exit(failed === 0 ? 0 : 1);
 }

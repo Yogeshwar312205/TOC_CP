@@ -124,4 +124,5 @@ CMakeFiles/automatalab_tests.dir/tests/test_minimization.cpp.obj: \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\stl_map.h \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\stl_multimap.h \
  d:\toc_cp\backend\include\minimization.hpp \
- d:\toc_cp\backend\include\conversion.hpp
+ d:\toc_cp\backend\include\conversion.hpp \
+ d:\toc_cp\backend\include\simulator.hpp

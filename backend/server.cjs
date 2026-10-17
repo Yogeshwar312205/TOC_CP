@@ -58,8 +58,86 @@ function move(nfa, states, symbol) {
   return Array.from(result).sort();
 }
 
+// Helper: Complete DFA by routing missing transitions to dead state
+function completeDfa(dfa) {
+  if (!dfa || !dfa.states || dfa.states.length === 0 || !dfa.alphabet || dfa.alphabet.length === 0) {
+    return dfa;
+  }
+  let isComplete = true;
+  for (const st of dfa.states) {
+    for (const sym of dfa.alphabet) {
+      if (!dfa.transitions.some((t) => t.from === st && t.symbol === sym)) {
+        isComplete = false;
+        break;
+      }
+    }
+    if (!isComplete) break;
+  }
+  if (isComplete) return dfa;
+
+  const result = {
+    states: [...dfa.states],
+    alphabet: [...dfa.alphabet],
+    startState: dfa.startState,
+    finalStates: [...(dfa.finalStates || dfa.acceptStates || [])],
+    acceptStates: [...(dfa.acceptStates || dfa.finalStates || [])],
+    transitions: [...dfa.transitions],
+    stateMapping: { ...(dfa.stateMapping || {}) },
+  };
+
+  // Check if existing state is already a trap/dead state
+  let deadState = '';
+  for (const st of result.states) {
+    if (result.finalStates.includes(st)) continue;
+    let isDead = true;
+    for (const sym of result.alphabet) {
+      const tr = result.transitions.find((t) => t.from === st && t.symbol === sym);
+      if (!tr || tr.to !== st) {
+        isDead = false;
+        break;
+      }
+    }
+    if (isDead) {
+      deadState = st;
+      break;
+    }
+  }
+
+  function generateLabel(idx) {
+    let label = '';
+    do {
+      label = String.fromCharCode(65 + (idx % 26)) + label;
+      idx = Math.floor(idx / 26) - 1;
+    } while (idx >= 0);
+    return label;
+  }
+
+  if (!deadState) {
+    let idx = 0;
+    do {
+      deadState = generateLabel(idx++);
+    } while (result.states.includes(deadState));
+
+    result.states.push(deadState);
+    result.stateMapping[deadState] = [];
+    for (const sym of result.alphabet) {
+      result.transitions.push({ from: deadState, symbol: sym, to: deadState });
+    }
+  }
+
+  for (const st of result.states) {
+    for (const sym of result.alphabet) {
+      if (!result.transitions.some((t) => t.from === st && t.symbol === sym)) {
+        result.transitions.push({ from: st, symbol: sym, to: deadState });
+      }
+    }
+  }
+
+  return result;
+}
+
 // NFA to DFA Subset Construction Algorithm
-function nfaToDfa(nfa) {
+function nfaToDfa(nfa, complete = true) {
   const stateRegistry = new Map();
   const workQueue = [];
   let labelIndex = 0;
@@ -99,6 +177,9 @@ function nfaToDfa(nfa) {
 
   const steps = [];
   const processed = new Set();
+  const pendingDead = [];
+
+  const sortedAlphabet = [...nfa.alphabet].sort();
 
   while (workQueue.length > 0) {
     const currentSet = workQueue.shift();
@@ -115,7 +196,7 @@ function nfaToDfa(nfa) {
       if (!dfa.finalStates.includes(currentLabel)) dfa.finalStates.push(currentLabel);
     }
 
-    for (const sym of nfa.alphabet) {
+    for (const sym of sortedAlphabet) {
       const moveSet = move(nfa, currentSet, sym);
       const closure = epsilonClosure(nfa, moveSet);
 
@@ -130,8 +211,16 @@ function nfaToDfa(nfa) {
       };
 
       if (closure.length === 0) {
-        step.nextDfaState = '∅';
-        step.description = `move({${currentSet.join(',')}}, '${sym}') = ∅ → Dead state`;
+        if (!complete) {
+          step.nextDfaState = '∅';
+          step.description = `move({${currentSet.join(',')}}, '${sym}') = ∅ → no transition`;
+          steps.push(step);
+        } else {
+          step.nextDfaState = '∅';
+          step.description = `move({${currentSet.join(',')}}, '${sym}') = ∅ → Dead state`;
+          pendingDead.push({ from: currentLabel, sym, stepIdx: steps.length });
+          steps.push(step);
+        }
       } else {
         const nextRes = getOrCreateLabel(closure);
         step.nextDfaState = nextRes.label;
@@ -147,8 +236,34 @@ function nfaToDfa(nfa) {
         if (nextRes.isNew) {
           workQueue.push(closure);
         }
+        steps.push(step);
       }
-      steps.push(step);
+    }
+  }
+
+  // Handle dead state if complete
+  if (complete && pendingDead.length > 0) {
+    const deadLabel = generateLabel(labelIndex++);
+    dfa.states.push(deadLabel);
+    dfa.stateMapping[deadLabel] = [];
+
+    for (const pd of pendingDead) {
+      dfa.transitions.push({ from: pd.from, symbol: pd.sym, to: deadLabel });
+      steps[pd.stepIdx].nextDfaState = deadLabel;
+      steps[pd.stepIdx].description = `move({${steps[pd.stepIdx].nfaSubstates.join(',')}}, '${pd.sym}') = ∅ → ${pd.from} --${pd.sym}--> ${deadLabel} [DEAD STATE]`;
+    }
+
+    for (const sym of sortedAlphabet) {
+      dfa.transitions.push({ from: deadLabel, symbol: sym, to: deadLabel });
+      steps.push({
+        stepIndex: stepIndex++,
+        dfaState: deadLabel,
+        nfaSubstates: [],
+        symbol: sym,
+        nextDfaState: deadLabel,
+        isNewState: false,
+        description: `move(∅, '${sym}') = ∅; ε-closure = ∅ → Dead state ${deadLabel} --${sym}--> ${deadLabel}`,
+      });
     }
   }
 
@@ -156,10 +271,32 @@ function nfaToDfa(nfa) {
 }
 
 // DFA Minimization Table-Filling Algorithm
-function minimizeDfa(inputDfa) {
-  const states = inputDfa.states;
-  const alphabet = inputDfa.alphabet;
-  const finalStates = inputDfa.finalStates || inputDfa.acceptStates || [];
+function minimizeDfa(inputDfa, complete = true) {
+  const workingDfa = complete ? completeDfa(inputDfa) : inputDfa;
+
+  // 1. Compute reachable states
+  const reachable = new Set();
+  const q = [workingDfa.startState];
+  if (workingDfa.states.includes(workingDfa.startState)) {
+    reachable.add(workingDfa.startState);
+  }
+
+  while (q.length > 0) {
+    const cur = q.shift();
+    for (const sym of workingDfa.alphabet) {
+      const tr = workingDfa.transitions.find((t) => t.from === cur && t.symbol === sym);
+      if (tr && !reachable.has(tr.to)) {
+        reachable.add(tr.to);
+        q.push(tr.to);
+      }
+    }
+  }
+
+  const unreachableStates = workingDfa.states.filter((s) => !reachable.has(s));
+  const states = workingDfa.states.filter((s) => reachable.has(s)).sort();
+  const alphabet = [...workingDfa.alphabet].sort();
+  const finalStates = (workingDfa.finalStates || workingDfa.acceptStates || []).filter((s) => reachable.has(s));
+  const transitions = workingDfa.transitions.filter((t) => reachable.has(t.from) && reachable.has(t.to));
 
   const n = states.length;
   const table = [];
@@ -181,6 +318,9 @@ function minimizeDfa(inputDfa) {
         distinguishable: distinguished,
         stepMarked: distinguished ? 0 : -1,
         reasonSymbol: distinguished ? 'Final vs Non-Final' : '',
+        destA: '',
+        destB: '',
+        reason: distinguished ? 'One is final, the other is not' : '',
       };
 
       table.push(entry);
@@ -199,14 +339,17 @@ function minimizeDfa(inputDfa) {
       const pairKey = [entry.stateA, entry.stateB].sort().join('|');
 
       for (const sym of alphabet) {
-        const trA = inputDfa.transitions.find((t) => t.from === entry.stateA && t.symbol === sym);
-        const trB = inputDfa.transitions.find((t) => t.from === entry.stateB && t.symbol === sym);
+        const trA = transitions.find((t) => t.from === entry.stateA && t.symbol === sym);
+        const trB = transitions.find((t) => t.from === entry.stateB && t.symbol === sym);
 
         if (!trA || !trB) {
           if (trA !== trB) {
             entry.distinguishable = true;
             entry.stepMarked = iter;
             entry.reasonSymbol = sym;
+            entry.destA = trA ? trA.to : '∅';
+            entry.destB = trB ? trB.to : '∅';
+            entry.reason = `On '${sym}': one state has a transition, the other does not`;
             distinguishedMap.set(pairKey, true);
             changed = true;
             break;
@@ -223,6 +366,9 @@ function minimizeDfa(inputDfa) {
           entry.distinguishable = true;
           entry.stepMarked = iter;
           entry.reasonSymbol = sym;
+          entry.destA = destA;
+          entry.destB = destB;
+          entry.reason = `On '${sym}': δ(${entry.stateA},${sym})=${destA} and δ(${entry.stateB},${sym})=${destB} are distinguishable`;
           distinguishedMap.set(pairKey, true);
           changed = true;
           break;
@@ -259,46 +405,131 @@ function minimizeDfa(inputDfa) {
     groupsMap.get(rep).push(st);
   }
 
+  // Identify dead state group (non-final, self-loops on all symbols, not start state)
+  const startRep = find(workingDfa.startState);
+  let deadGroupRep = null;
+
+  groupsMap.forEach((members, rep) => {
+    if (rep === startRep) return;
+    const hasFinal = members.some((m) => finalStates.includes(m));
+    if (hasFinal) return;
+
+    let allSelfLoop = true;
+    for (const sym of alphabet) {
+      const tr = transitions.find((t) => t.from === rep && t.symbol === sym);
+      if (!tr || find(tr.to) !== rep) {
+        allSelfLoop = false;
+        break;
+      }
+    }
+    if (allSelfLoop && groupsMap.size > 1) {
+      deadGroupRep = rep;
+    }
+  });
+
+  // Canonical ordering: start group first, BFS over non-dead groups, dead group last
+  const orderedReps = [startRep];
+  const visitedReps = new Set([startRep]);
+  const bfsQ = [startRep];
+
+  while (bfsQ.length > 0) {
+    const curRep = bfsQ.shift();
+    for (const sym of alphabet) {
+      const tr = transitions.find((t) => t.from === curRep && t.symbol === sym);
+      if (tr) {
+        const destRep = find(tr.to);
+        if (destRep !== deadGroupRep && !visitedReps.has(destRep)) {
+          visitedReps.add(destRep);
+          orderedReps.push(destRep);
+          bfsQ.push(destRep);
+        }
+      }
+    }
+  }
+
+  // Remaining non-dead groups
+  const remainingReps = [];
+  groupsMap.forEach((_, rep) => {
+    if (rep !== deadGroupRep && !visitedReps.has(rep)) {
+      remainingReps.push(rep);
+    }
+  });
+  remainingReps.sort();
+  for (const r of remainingReps) {
+    orderedReps.push(r);
+    visitedReps.add(r);
+  }
+
+  // Dead group placed last
+  if (deadGroupRep && !visitedReps.has(deadGroupRep)) {
+    orderedReps.push(deadGroupRep);
+    visitedReps.add(deadGroupRep);
+  }
+
+  function generateStateLabel(idx) {
+    let label = '';
+    do {
+      label = String.fromCharCode(65 + (idx % 26)) + label;
+      idx = Math.floor(idx / 26) - 1;
+    } while (idx >= 0);
+    return label;
+  }
+
+  const repToCanonical = {};
+  let labelIdx = 0;
+  for (const rep of orderedReps) {
+    repToCanonical[rep] = generateStateLabel(labelIdx++);
+  }
+
   const equivalenceClasses = [];
   const stateMapping = {};
   const minStates = [];
 
-  groupsMap.forEach((members, rep) => {
+  for (const rep of orderedReps) {
+    const canonical = repToCanonical[rep];
+    const members = groupsMap.get(rep);
     equivalenceClasses.push({
       states: members,
-      representative: rep,
+      representative: canonical,
     });
-    minStates.push(rep);
+    minStates.push(canonical);
     members.forEach((m) => {
-      stateMapping[m] = rep;
+      stateMapping[m] = canonical;
     });
-  });
+  }
 
   const minTransitions = [];
   const minTransKeys = new Set();
 
-  for (const tr of inputDfa.transitions) {
+  for (const tr of transitions) {
     const srcRep = find(tr.from);
     const destRep = find(tr.to);
-    const key = `${srcRep}|${tr.symbol}|${destRep}`;
+    const srcCanon = repToCanonical[srcRep];
+    const destCanon = repToCanonical[destRep];
+    const key = `${srcCanon}|${tr.symbol}|${destCanon}`;
     if (!minTransKeys.has(key)) {
       minTransKeys.add(key);
       minTransitions.push({
-        from: srcRep,
+        from: srcCanon,
         symbol: tr.symbol,
-        to: destRep,
+        to: destCanon,
       });
     }
   }
 
-  const minFinalStates = Array.from(
-    new Set(finalStates.map((fs) => find(fs)))
-  );
+  const minFinalStates = [];
+  for (const rep of orderedReps) {
+    const canonical = repToCanonical[rep];
+    const members = groupsMap.get(rep);
+    if (members.some((m) => finalStates.includes(m))) {
+      minFinalStates.push(canonical);
+    }
+  }
 
   const minDfa = {
     states: minStates,
     alphabet: alphabet,
-    startState: find(inputDfa.startState),
+    startState: repToCanonical[startRep],
     acceptStates: minFinalStates,
     finalStates: minFinalStates,
     transitions: minTransitions,
@@ -306,7 +537,7 @@ function minimizeDfa(inputDfa) {
 
   return {
     originalStates: states,
-    unreachableStates: [],
+    unreachableStates,
     table,
     equivalenceClasses,
     stateMapping,
@@ -428,16 +659,20 @@ const server = http.createServer((req, res) => {
       }
 
       if (url === '/api/convert' && req.method === 'POST') {
-        const nfa = JSON.parse(body);
-        const result = nfaToDfa(nfa);
+        const parsed = JSON.parse(body);
+        const nfa = parsed.nfa || parsed;
+        const complete = parsed.complete !== undefined ? parsed.complete : true;
+        const result = nfaToDfa(nfa, complete);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, data: result }));
         return;
       }
 
       if (url === '/api/minimize' && req.method === 'POST') {
-        const dfa = JSON.parse(body);
-        const result = minimizeDfa(dfa);
+        const parsed = JSON.parse(body);
+        const dfa = parsed.dfa || parsed;
+        const complete = parsed.complete !== undefined ? parsed.complete : true;
+        const result = minimizeDfa(dfa, complete);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, data: result }));
         return;

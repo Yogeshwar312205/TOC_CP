@@ -77,9 +77,75 @@ StateSet move(const NFA& nfa, const StateSet& states, const Symbol& symbol) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// completeDFA
+// Completes an existing DFA by routing any undefined transitions to a dead state
+// with self-loops on all alphabet symbols.
+// ─────────────────────────────────────────────────────────────────────────────
+DFA completeDFA(const DFA& dfa) {
+    if (dfa.states.empty() || dfa.alphabet.empty()) return dfa;
+
+    bool isComplete = true;
+    for (const auto& st : dfa.states) {
+        for (const auto& sym : dfa.alphabet) {
+            if (dfa.transitions.find({st, sym}) == dfa.transitions.end()) {
+                isComplete = false;
+                break;
+            }
+        }
+        if (!isComplete) break;
+    }
+    if (isComplete) return dfa;
+
+    DFA result = dfa;
+
+    // Check if an existing state is already a trap/dead state
+    std::string deadState = "";
+    for (const auto& st : result.states) {
+        if (result.finalStates.count(st)) continue;
+        bool isDead = true;
+        for (const auto& sym : result.alphabet) {
+            auto it = result.transitions.find({st, sym});
+            if (it == result.transitions.end() || it->second != st) {
+                isDead = false;
+                break;
+            }
+        }
+        if (isDead) {
+            deadState = st;
+            break;
+        }
+    }
+
+    if (deadState.empty()) {
+        int idx = 0;
+        do {
+            deadState = generateStateLabel(idx++);
+        } while (result.states.count(deadState));
+
+        result.states.insert(deadState);
+        result.stateMapping[deadState] = {};
+        for (const auto& sym : result.alphabet) {
+            result.transitions[{deadState, sym}] = deadState;
+        }
+    }
+
+    // Route all missing transitions to deadState
+    for (const auto& st : result.states) {
+        for (const auto& sym : result.alphabet) {
+            if (result.transitions.find({st, sym}) == result.transitions.end()) {
+                result.transitions[{st, sym}] = deadState;
+            }
+        }
+    }
+
+    return result;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // nfaToDfa — Subset Construction Algorithm
 // ─────────────────────────────────────────────────────────────────────────────
-ConversionResult nfaToDfa(const NFA& nfa) {
+ConversionResult nfaToDfa(const NFA& nfa, bool complete) {
     ConversionResult result;
     result.success = true;
 
@@ -112,6 +178,13 @@ ConversionResult nfaToDfa(const NFA& nfa) {
     // Sort alphabet for deterministic step ordering
     std::vector<Symbol> sortedAlphabet(nfa.alphabet.begin(), nfa.alphabet.end());
     std::sort(sortedAlphabet.begin(), sortedAlphabet.end());
+
+    struct PendingDead {
+        State from;
+        Symbol sym;
+        size_t stepIdx;
+    };
+    std::vector<PendingDead> pendingDeadTransitions;
 
     // ── Step 2: Process the work queue ──────────────────────────────────────
     std::set<StateSet> processed;
@@ -153,14 +226,29 @@ ConversionResult nfaToDfa(const NFA& nfa) {
             step.epsilonClosureResult   = closure;
 
             if (closure.empty()) {
-                // Dead/trap state — no transition added (partial DFA is fine)
-                step.nextDfaStateName = "∅";
-                step.isNewState       = false;
+                if (!complete) {
+                    // Partial DFA — no transition added
+                    step.nextDfaStateName = "∅";
+                    step.isNewState       = false;
 
-                std::ostringstream desc;
-                desc << "move(" << stateSetToString(currentSet) << ", " << sym << ") = ∅"
-                     << " → no transition";
-                step.description = desc.str();
+                    std::ostringstream desc;
+                    desc << "move(" << stateSetToString(currentSet) << ", " << sym << ") = ∅"
+                         << " → no transition";
+                    step.description = desc.str();
+                    result.steps.push_back(std::move(step));
+                } else {
+                    // Complete DFA — will route to dead/trap state
+                    step.nextDfaStateName = "∅";
+                    step.isNewState       = false;
+
+                    std::ostringstream desc;
+                    desc << "move(" << stateSetToString(currentSet) << ", " << sym << ") = ∅"
+                         << " → Dead state";
+                    step.description = desc.str();
+
+                    pendingDeadTransitions.push_back({currentLabel, sym, result.steps.size()});
+                    result.steps.push_back(std::move(step));
+                }
             } else {
                 // c. Register the new DFA state if needed
                 auto nextPair = getOrCreateLabel(closure);
@@ -184,11 +272,49 @@ ConversionResult nfaToDfa(const NFA& nfa) {
                      << " → " << currentLabel << " --" << sym << "--> " << targetLabel;
                 if (isNew) desc << " [NEW STATE]";
                 step.description = desc.str();
+                result.steps.push_back(std::move(step));
             }
+        }
+    }
 
-            result.steps.push_back(std::move(step));
+    // ── Step 3: Handle Dead State for Complete DFA ───────────────────────────
+    if (complete && !pendingDeadTransitions.empty()) {
+        std::string deadLabel = generateStateLabel(labelIndex++);
+        result.dfa.states.insert(deadLabel);
+        result.dfa.stateMapping[deadLabel] = {};
+
+        for (const auto& pd : pendingDeadTransitions) {
+            result.dfa.transitions[{pd.from, pd.sym}] = deadLabel;
+            result.steps[pd.stepIdx].nextDfaStateName = deadLabel;
+            std::ostringstream desc;
+            desc << "move(" << stateSetToString(result.steps[pd.stepIdx].currentDfaStateSet) << ", " << pd.sym << ") = ∅"
+                 << " → " << pd.from << " --" << pd.sym << "--> " << deadLabel << " [DEAD STATE]";
+            result.steps[pd.stepIdx].description = desc.str();
+        }
+
+        // Dead state loops on all alphabet symbols
+        for (const Symbol& sym : sortedAlphabet) {
+            result.dfa.transitions[{deadLabel, sym}] = deadLabel;
+
+            ConversionStep deadStep;
+            deadStep.stepIndex            = stepIndex++;
+            deadStep.currentDfaStateSet   = {};
+            deadStep.currentDfaStateName  = deadLabel;
+            deadStep.symbol               = sym;
+            deadStep.moveResult           = {};
+            deadStep.epsilonClosureResult = {};
+            deadStep.nextDfaStateName     = deadLabel;
+            deadStep.isNewState           = false;
+
+            std::ostringstream desc;
+            desc << "move(∅, " << sym << ") = ∅; ε-closure = ∅ → Dead state "
+                 << deadLabel << " --" << sym << "--> " << deadLabel;
+            deadStep.description = desc.str();
+
+            result.steps.push_back(std::move(deadStep));
         }
     }
 
     return result;
 }
+

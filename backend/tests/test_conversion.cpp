@@ -126,10 +126,15 @@ TEST(conversion_ending_in_01) {
 
 TEST(conversion_epsilon_nfa) {
     NFA nfa = makeEpsilonNFA();
-    ConversionResult cr = nfaToDfa(nfa);
+    // In complete DFA mode, undefined transition on 'a' from q2 routes to dead state
+    ConversionResult cr = nfaToDfa(nfa, true);
     ASSERT_TRUE(cr.success);
-    // Should produce DFA states for {q0,q1}, {q2}
-    ASSERT_EQ(cr.dfa.states.size(), 2u);
+    ASSERT_EQ(cr.dfa.states.size(), 3u);
+
+    // In partial DFA mode, dead state is omitted
+    ConversionResult crPartial = nfaToDfa(nfa, false);
+    ASSERT_TRUE(crPartial.success);
+    ASSERT_EQ(crPartial.dfa.states.size(), 2u);
 }
 
 TEST(conversion_dfa_start_is_not_empty) {
@@ -164,11 +169,16 @@ TEST(conversion_single_state_nfa) {
     nfa.alphabet = {"0","1"};
     nfa.startState = "q0";
     nfa.finalStates = {"q0"};
-    // No transitions
-    ConversionResult cr = nfaToDfa(nfa);
+    // In complete DFA mode, missing transitions on 0,1 route to dead state (2 states: q0, dead)
+    ConversionResult cr = nfaToDfa(nfa, true);
     ASSERT_TRUE(cr.success);
-    ASSERT_EQ(cr.dfa.states.size(), 1u);
-    ASSERT_FALSE(cr.dfa.finalStates.empty()); // q0 is final in NFA → DFA start state is final
+    ASSERT_EQ(cr.dfa.states.size(), 2u);
+    ASSERT_FALSE(cr.dfa.finalStates.empty());
+
+    // In partial mode, only 1 state
+    ConversionResult crPartial = nfaToDfa(nfa, false);
+    ASSERT_TRUE(crPartial.success);
+    ASSERT_EQ(crPartial.dfa.states.size(), 1u);
 }
 
 TEST(conversion_alphabet_preserved) {
@@ -176,3 +186,52 @@ TEST(conversion_alphabet_preserved) {
     ConversionResult cr = nfaToDfa(nfa);
     ASSERT_EQ(cr.dfa.alphabet, nfa.alphabet);
 }
+
+TEST(conversion_starts_with_10_complete_dfa) {
+    // Construct NFA for 10(0+1)*
+    // q0 --1--> q1 --0--> q2 (final) --0,1--> q2
+    NFA nfa;
+    nfa.states = {"q0", "q1", "q2"};
+    nfa.alphabet = {"0", "1"};
+    nfa.startState = "q0";
+    nfa.finalStates = {"q2"};
+    nfa.transitions[{"q0", "1"}] = {"q1"};
+    nfa.transitions[{"q1", "0"}] = {"q2"};
+    nfa.transitions[{"q2", "0"}] = {"q2"};
+    nfa.transitions[{"q2", "1"}] = {"q2"};
+
+    ConversionResult cr = nfaToDfa(nfa, true);
+    ASSERT_TRUE(cr.success);
+
+    // Complete DFA has states: A ({q0}), B ({q1}), C ({q2}), D (dead)
+    ASSERT_EQ(cr.dfa.states.size(), 4u);
+    ASSERT_TRUE(cr.dfa.states.count("A"));
+    ASSERT_TRUE(cr.dfa.states.count("B"));
+    ASSERT_TRUE(cr.dfa.states.count("C"));
+    ASSERT_TRUE(cr.dfa.states.count("D"));
+
+    // Every state in complete DFA has transitions for both 0 and 1
+    for (const auto& s : cr.dfa.states) {
+        ASSERT_TRUE(cr.dfa.transitions.count({s, "0"}) > 0);
+        ASSERT_TRUE(cr.dfa.transitions.count({s, "1"}) > 0);
+        ASSERT_TRUE(cr.dfa.states.count(cr.dfa.transitions.at({s, "0"})) > 0);
+        ASSERT_TRUE(cr.dfa.states.count(cr.dfa.transitions.at({s, "1"})) > 0);
+    }
+
+    // Dead state D loops on 0 and 1
+    ASSERT_EQ(cr.dfa.transitions.at({"D", "0"}), "D");
+    ASSERT_EQ(cr.dfa.transitions.at({"D", "1"}), "D");
+
+    // A on 0 -> D, A on 1 -> B
+    ASSERT_EQ(cr.dfa.transitions.at({"A", "0"}), "D");
+    ASSERT_EQ(cr.dfa.transitions.at({"A", "1"}), "B");
+
+    // B on 0 -> C, B on 1 -> D
+    ASSERT_EQ(cr.dfa.transitions.at({"B", "0"}), "C");
+    ASSERT_EQ(cr.dfa.transitions.at({"B", "1"}), "D");
+
+    // C on 0 -> C, C on 1 -> C
+    ASSERT_EQ(cr.dfa.transitions.at({"C", "0"}), "C");
+    ASSERT_EQ(cr.dfa.transitions.at({"C", "1"}), "C");
+}
+

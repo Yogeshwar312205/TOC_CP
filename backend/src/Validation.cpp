@@ -63,7 +63,7 @@ ValidationResult validateNFA(const NFA& nfa) {
 // ─────────────────────────────────────────────────────────────────────────────
 // validateDFA
 // ─────────────────────────────────────────────────────────────────────────────
-ValidationResult validateDFA(const DFA& dfa) {
+ValidationResult validateDFA(const DFA& dfa, bool requireComplete) {
     ValidationResult result;
     result.valid = true;
 
@@ -105,6 +105,17 @@ ValidationResult validateDFA(const DFA& dfa) {
         if (!dfa.states.count(dest))
             addError("INVALID_TRANSITION",
                      "Transition to unknown state '" + dest + "'");
+    }
+
+    if (requireComplete) {
+        for (const State& s : dfa.states) {
+            for (const Symbol& sym : dfa.alphabet) {
+                if (dfa.transitions.find({s, sym}) == dfa.transitions.end()) {
+                    addError("INCOMPLETE_DFA",
+                             "DFA is incomplete: missing transition from state '" + s + "' on symbol '" + sym + "'");
+                }
+            }
+        }
     }
 
     return result;
